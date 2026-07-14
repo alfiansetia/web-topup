@@ -27,4 +27,38 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn(Request $request) => $request->is('api/*'),
         );
+
+        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\HttpException $e, Request $request) {
+            if ($request->is('api/*') || $request->wantsJson()) {
+                return null;
+            }
+
+            $status = $e->getStatusCode();
+
+            return \Inertia\Inertia::render('Error', [
+                'status' => $status,
+            ])->toResponse($request)->setStatusCode($status);
+        });
+
+        $exceptions->render(function (\Throwable $e, Request $request) {
+            if ($request->is('api/*') || $request->wantsJson()) {
+                return null;
+            }
+
+            // Let Laravel handle these natively (validation errors, auth redirects, etc.)
+            if (
+                $e instanceof \Illuminate\Validation\ValidationException
+                || $e instanceof \Illuminate\Auth\AuthenticationException
+                || $e instanceof \Symfony\Component\HttpKernel\Exception\HttpException
+                || $e instanceof \Illuminate\Http\Exceptions\HttpResponseException
+            ) {
+                return null;
+            }
+
+            $status = method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500;
+
+            return \Inertia\Inertia::render('Error', [
+                'status' => $status,
+            ])->toResponse($request)->setStatusCode($status);
+        });
     })->create();

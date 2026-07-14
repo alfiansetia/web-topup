@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AdminCategoryController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminOrderController;
 use App\Http\Controllers\Admin\AdminProductController;
+use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminVariantController;
 use Illuminate\Support\Facades\Route;
 
@@ -38,6 +39,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Orders
     Route::get('orders', [AdminOrderController::class, 'index'])->name('orders.index');
     Route::get('orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
+
+    // Users
+    Route::get('users', [AdminUserController::class, 'index'])->name('users.index');
+    Route::put('users/{user}/toggle-block', [AdminUserController::class, 'toggleBlock'])->name('users.toggle-block');
+    Route::delete('users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
     Route::post('orders/{order}/verify', [AdminOrderController::class, 'verifyPayment'])->name('orders.verify');
     Route::post('orders/{order}/complete', [AdminOrderController::class, 'complete'])->name('orders.complete');
     Route::post('orders/{order}/cancel', [AdminOrderController::class, 'cancel'])->name('orders.cancel');

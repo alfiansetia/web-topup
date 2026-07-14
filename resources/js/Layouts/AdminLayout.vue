@@ -6,6 +6,7 @@ import {
     FolderIcon,
     ShoppingBagIcon,
     ClipboardDocumentListIcon,
+    UsersIcon,
     Bars3Icon,
     ArrowLeftStartOnRectangleIcon,
     CheckCircleIcon,
@@ -29,6 +30,7 @@ const navItems = [
         route: "admin.orders.index",
         icon: ClipboardDocumentListIcon,
     },
+    { name: "Pengguna", route: "admin.users.index", icon: UsersIcon },
 ];
 
 const isActive = (routeName) => {

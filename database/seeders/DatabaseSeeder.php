@@ -26,6 +26,13 @@ class DatabaseSeeder extends Seeder
             'password' => bcrypt('user12345'),
             'role' => 'user',
         ]);
+        User::factory()->create([
+            'name' => 'Blocked User',
+            'email' => 'blocked@gmail.com',
+            'password' => bcrypt('blocked123'),
+            'role' => 'user',
+            'is_blocked' => true,
+        ]);
 
         // ── Categories ──
         $categories = [

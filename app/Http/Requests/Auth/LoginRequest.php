@@ -50,6 +50,15 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        // Check if user is blocked
+        if (Auth::user()->is_blocked) {
+            Auth::logout();
+
+            throw ValidationException::withMessages([
+                'email' => 'Akun Anda telah diblokir. Hubungi admin untuk info lebih lanjut.',
+            ]);
+        }
+
         RateLimiter::clear($this->throttleKey());
     }
 
@@ -81,6 +90,6 @@ class LoginRequest extends FormRequest
      */
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
+        return Str::transliterate(Str::lower($this->string('email')) . '|' . $this->ip());
     }
 }
