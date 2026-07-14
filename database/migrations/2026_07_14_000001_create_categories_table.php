@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');                        // Nama kategori: Streaming, Gaming, dll
             $table->string('slug')->unique();              // URL-friendly: streaming, gaming
-            $table->string('icon')->nullable();            // Icon class atau emoji
+            $table->string('image')->nullable();            // Icon class atau emoji
             $table->text('description')->nullable();       // Deskripsi singkat
             $table->boolean('is_active')->default(true);   // Aktif/nonaktif
             $table->integer('sort_order')->default(0);     // Urutan tampil
