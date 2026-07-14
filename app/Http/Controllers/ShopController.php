@@ -125,32 +125,15 @@ class ShopController extends Controller
     // Checkout - simpan order
     public function checkout(Request $request)
     {
-        // Base validation
-        $rules = [
+        $validated = $request->validate([
             'variant_id' => 'required|exists:product_variants,id',
-            'quantity' => 'required|integer|min:1',
+            'quantity' => 'required|integer|min:1|max:10',
             'notes' => 'nullable|string|max:1000',
-        ];
+        ]);
 
-        // Guest wajib isi data diri
-        if (!auth()->check()) {
-            $rules['customer_name'] = 'required|string|max:255';
-            $rules['customer_email'] = 'required|email|max:255';
-            $rules['customer_phone'] = 'nullable|string|max:20';
-        }
-
-        $validated = $request->validate($rules);
-
-        // Ambil data customer dari auth atau input
-        if (auth()->check()) {
-            $customerName = auth()->user()->name;
-            $customerEmail = auth()->user()->email;
-            $customerPhone = null;
-        } else {
-            $customerName = $validated['customer_name'];
-            $customerEmail = $validated['customer_email'];
-            $customerPhone = $validated['customer_phone'] ?? null;
-        }
+        $customerName = auth()->user()->name;
+        $customerEmail = auth()->user()->email;
+        $customerPhone = null;
 
         $variant = ProductVariant::with('product')->findOrFail($validated['variant_id']);
 
@@ -238,17 +221,15 @@ class ShopController extends Controller
     {
         $validated = $request->validate([
             'order_number' => 'required|string',
-            'customer_email' => 'required|email',
         ]);
 
         $order = Order::where('order_number', $validated['order_number'])
-            ->where('customer_email', $validated['customer_email'])
             ->with(['items'])
             ->first();
 
         if (!$order) {
             return back()->withErrors([
-                'order_number' => 'Pesanan tidak ditemukan. Periksa nomor pesanan dan email Anda.',
+                'order_number' => 'Pesanan tidak ditemukan. Periksa nomor pesanan Anda.',
             ]);
         }
 

@@ -140,7 +140,7 @@ const isActive = (routeName) => {
                     </button>
                     <div></div>
                     <Link
-                        :href="route('admin.dashboard')"
+                        :href="route('shop.home')"
                         class="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700"
                     >
                         <ArrowLeftStartOnRectangleIcon class="w-4 h-4" />

@@ -4,7 +4,6 @@ import { Head, Link, useForm } from "@inertiajs/vue3";
 
 const form = useForm({
     order_number: "",
-    customer_email: "",
 });
 
 const submit = () => {
@@ -41,8 +40,7 @@ const submit = () => {
                     Lacak Pesanan 🔍
                 </h1>
                 <p class="mt-2 text-sm text-gray-500">
-                    Masukkan nomor pesanan dan email untuk melihat status
-                    pesanan Anda.
+                    Masukkan nomor pesanan untuk melihat status pesanan Anda.
                 </p>
             </div>
 
@@ -59,7 +57,7 @@ const submit = () => {
                             v-model="form.order_number"
                             type="text"
                             required
-                            placeholder="INV-20260714-00001"
+                            placeholder="A3BF9KXM"
                             class="block w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-all"
                         />
                         <p
@@ -67,26 +65,6 @@ const submit = () => {
                             class="mt-1.5 text-xs text-red-500"
                         >
                             {{ form.errors.order_number }}
-                        </p>
-                    </div>
-
-                    <div>
-                        <label
-                            class="block text-sm font-semibold text-gray-700 mb-1.5"
-                            >Email</label
-                        >
-                        <input
-                            v-model="form.customer_email"
-                            type="email"
-                            required
-                            placeholder="email@contoh.com"
-                            class="block w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-all"
-                        />
-                        <p
-                            v-if="form.errors.customer_email"
-                            class="mt-1.5 text-xs text-red-500"
-                        >
-                            {{ form.errors.customer_email }}
                         </p>
                     </div>
 

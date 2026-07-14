@@ -23,9 +23,6 @@ const formatPrice = (price) => {
 };
 
 const form = useForm({
-    customer_name: "",
-    customer_email: "",
-    customer_phone: "",
     notes: "",
     variant_id: selectedVariant.value?.id || null,
     quantity: 1,
@@ -37,6 +34,10 @@ const selectVariant = (variant) => {
 };
 
 const startCheckout = () => {
+    if (!isLoggedIn.value) {
+        window.location.href = route("login");
+        return;
+    }
     showCheckoutForm.value = true;
     form.variant_id = selectedVariant.value?.id;
 };
@@ -279,20 +280,15 @@ const submitOrder = () => {
 
                         <!-- Checkout Form -->
                         <div
-                            v-if="showCheckoutForm"
+                            v-if="showCheckoutForm && isLoggedIn"
                             class="mt-6 bg-white rounded-2xl border border-gray-100 p-6"
                         >
                             <h3 class="font-semibold text-gray-900 mb-4">
-                                {{
-                                    isLoggedIn
-                                        ? "Detail Pesanan"
-                                        : "Data Pembeli"
-                                }}
+                                Detail Pesanan
                             </h3>
 
                             <!-- Logged-in user info -->
                             <div
-                                v-if="isLoggedIn"
                                 class="mb-4 p-4 bg-indigo-50 rounded-xl border border-indigo-100"
                             >
                                 <div class="flex items-center gap-3">
@@ -330,64 +326,7 @@ const submitOrder = () => {
                                 @submit.prevent="submitOrder"
                                 class="space-y-4"
                             >
-                                <!-- Guest: show personal data fields -->
-                                <template v-if="!isLoggedIn">
-                                    <div>
-                                        <label
-                                            class="block text-sm font-medium text-gray-700 mb-1"
-                                            >Nama Lengkap *</label
-                                        >
-                                        <input
-                                            v-model="form.customer_name"
-                                            type="text"
-                                            required
-                                            placeholder="John Doe"
-                                            class="block w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-all"
-                                        />
-                                        <p
-                                            v-if="form.errors.customer_name"
-                                            class="mt-1 text-xs text-red-500"
-                                        >
-                                            {{ form.errors.customer_name }}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <label
-                                            class="block text-sm font-medium text-gray-700 mb-1"
-                                            >Email *</label
-                                        >
-                                        <input
-                                            v-model="form.customer_email"
-                                            type="email"
-                                            required
-                                            placeholder="email@contoh.com"
-                                            class="block w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-all"
-                                        />
-                                        <p
-                                            v-if="form.errors.customer_email"
-                                            class="mt-1 text-xs text-red-500"
-                                        >
-                                            {{ form.errors.customer_email }}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <label
-                                            class="block text-sm font-medium text-gray-700 mb-1"
-                                            >No. WhatsApp
-                                            <span class="text-gray-400"
-                                                >(opsional)</span
-                                            ></label
-                                        >
-                                        <input
-                                            v-model="form.customer_phone"
-                                            type="text"
-                                            placeholder="08xxxxxxxxxx"
-                                            class="block w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-all"
-                                        />
-                                    </div>
-                                </template>
-
-                                <!-- Notes for all users -->
+                                <!-- Notes -->
                                 <div>
                                     <label
                                         class="block text-sm font-medium text-gray-700 mb-1"

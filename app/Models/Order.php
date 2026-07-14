@@ -48,20 +48,14 @@ class Order extends Model
         return $this->hasMany(OrderItem::class);
     }
 
-    // Generate order number otomatis
+    // Generate random order number (8 char, unguessable)
     public static function generateOrderNumber(): string
     {
-        $prefix = 'INV-' . now()->format('Ymd') . '-';
-        $lastOrder = static::where('order_number', 'like', $prefix . '%')
-            ->orderBy('order_number', 'desc')
-            ->first();
+        do {
+            $number = strtoupper(bin2hex(random_bytes(4))); // 8 hex chars
+        } while (static::where('order_number', $number)->exists());
 
-        if ($lastOrder) {
-            $lastNumber = (int) substr($lastOrder->order_number, -5);
-            return $prefix . str_pad($lastNumber + 1, 5, '0', STR_PAD_LEFT);
-        }
-
-        return $prefix . '00001';
+        return $number;
     }
 
     // Scope: filter by status

@@ -5,12 +5,14 @@ import {
     RocketLaunchIcon,
     EnvelopeIcon,
     ChatBubbleLeftRightIcon,
+    ArrowRightStartOnRectangleIcon,
 } from "@heroicons/vue/24/outline";
 
 const page = usePage();
 const user = computed(() => page.props.auth?.user);
 const appName = computed(() => import.meta.env.VITE_APP_NAME || "TopUp Store");
 const mobileMenuOpen = ref(false);
+const userDropdownOpen = ref(false);
 </script>
 
 <template>
@@ -70,29 +72,84 @@ const mobileMenuOpen = ref(false);
                     <!-- Right: Auth -->
                     <div class="hidden md:flex items-center gap-3">
                         <template v-if="user">
-                            <Link
-                                :href="
-                                    user.role === 'admin'
-                                        ? route('admin.dashboard')
-                                        : route('dashboard')
-                                "
-                                class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 hover:text-indigo-600 rounded-lg hover:bg-indigo-50 transition-all"
-                            >
-                                <svg
-                                    class="w-4 h-4"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke-width="2"
-                                    stroke="currentColor"
+                            <div class="relative">
+                                <button
+                                    @click="
+                                        userDropdownOpen = !userDropdownOpen
+                                    "
+                                    class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 hover:text-indigo-600 rounded-lg hover:bg-indigo-50 transition-all"
                                 >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25a2.25 2.25 0 0 1-2.25-2.25v-2.25Z"
-                                    />
-                                </svg>
-                                Dashboard
-                            </Link>
+                                    <div
+                                        class="w-7 h-7 bg-indigo-100 rounded-full flex items-center justify-center"
+                                    >
+                                        <span
+                                            class="text-xs font-bold text-indigo-600"
+                                            >{{
+                                                user.name
+                                                    ?.charAt(0)
+                                                    ?.toUpperCase()
+                                            }}</span
+                                        >
+                                    </div>
+                                    <span class="hidden lg:inline">{{
+                                        user.name
+                                    }}</span>
+                                    <svg
+                                        class="w-4 h-4 text-gray-400"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke-width="2"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            d="m19.5 8.25-7.5 7.5-7.5-7.5"
+                                        />
+                                    </svg>
+                                </button>
+                                <div
+                                    v-if="userDropdownOpen"
+                                    @click="userDropdownOpen = false"
+                                    class="fixed inset-0 z-40"
+                                ></div>
+                                <div
+                                    v-if="userDropdownOpen"
+                                    class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-50"
+                                >
+                                    <Link
+                                        :href="route('dashboard.index')"
+                                        class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600"
+                                    >
+                                        <svg
+                                            class="w-4 h-4"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke-width="2"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25a2.25 2.25 0 0 1-2.25-2.25v-2.25Z"
+                                            />
+                                        </svg>
+                                        Dashboard
+                                    </Link>
+                                    <hr class="my-1 border-gray-100" />
+                                    <Link
+                                        :href="route('logout')"
+                                        method="post"
+                                        as="button"
+                                        class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                                    >
+                                        <ArrowRightStartOnRectangleIcon
+                                            class="w-4 h-4"
+                                        />
+                                        Keluar
+                                    </Link>
+                                </div>
+                            </div>
                         </template>
                         <template v-else>
                             <Link
@@ -168,13 +225,16 @@ const mobileMenuOpen = ref(false);
                     >
                     <template v-if="user">
                         <Link
-                            :href="
-                                user.role === 'admin'
-                                    ? route('admin.dashboard')
-                                    : route('dashboard')
-                            "
+                            :href="route('dashboard.index')"
                             class="block px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-indigo-50"
                             >Dashboard</Link
+                        >
+                        <Link
+                            :href="route('logout')"
+                            method="post"
+                            as="button"
+                            class="block w-full text-left px-3 py-2 text-sm font-medium text-red-600 rounded-lg hover:bg-red-50"
+                            >Keluar</Link
                         >
                     </template>
                     <template v-else>
