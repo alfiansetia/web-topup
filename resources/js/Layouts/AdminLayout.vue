@@ -17,6 +17,7 @@ const page = usePage();
 const flash = computed(() => page.props.flash);
 const user = computed(() => page.props.auth?.user);
 
+const appName = computed(() => page.props.appName || "TopUp Store");
 const sidebarOpen = ref(false);
 const sidebarCollapsed = ref(false);
 const currentRoute = computed(() => route().current());
@@ -72,12 +73,13 @@ const isActive = (routeName) => {
                 <span
                     v-if="!sidebarCollapsed"
                     class="text-lg font-bold tracking-tight"
-                    >TopUp Store</span
+                    >{{ appName }}</span
                 >
             </div>
 
             <!-- Navigation -->
             <nav class="mt-4 px-3 space-y-1">
+                <!-- Regular nav items -->
                 <Link
                     v-for="item in navItems"
                     :key="item.route"

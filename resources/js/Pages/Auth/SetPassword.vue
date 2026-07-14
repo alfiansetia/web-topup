@@ -1,11 +1,15 @@
 <script setup>
-import { Head, useForm, Link } from "@inertiajs/vue3";
+import { Head, useForm, Link, usePage } from "@inertiajs/vue3";
+import { computed } from "vue";
 import {
     LockClosedIcon,
     CheckCircleIcon,
     ShieldCheckIcon,
     RocketLaunchIcon,
 } from "@heroicons/vue/24/outline";
+
+const page = usePage();
+const appName = computed(() => page.props.appName || "TopUp Store");
 
 const form = useForm({
     password: "",
@@ -20,7 +24,7 @@ const submit = () => {
 </script>
 
 <template>
-    <Head title="Atur Password - TopUp Store" />
+    <Head title="Atur Password" />
 
     <div
         class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center p-4"
@@ -33,7 +37,7 @@ const submit = () => {
                     class="inline-flex items-center gap-2 text-2xl font-bold text-gray-900"
                 >
                     <RocketLaunchIcon class="w-7 h-7 text-indigo-600" />
-                    TopUp Store
+                    {{ appName }}
                 </Link>
             </div>
 

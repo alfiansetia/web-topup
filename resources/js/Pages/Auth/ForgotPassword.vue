@@ -1,5 +1,6 @@
 <script setup>
-import { Head, Link } from "@inertiajs/vue3";
+import { Head, Link, usePage } from "@inertiajs/vue3";
+import { computed } from "vue";
 import {
     RocketLaunchIcon,
     ArrowRightOnRectangleIcon,
@@ -10,10 +11,13 @@ import {
 defineProps({
     status: { type: String },
 });
+
+const page = usePage();
+const appName = computed(() => page.props.appName || "TopUp Store");
 </script>
 
 <template>
-    <Head title="Lupa Password - TopUp Store" />
+    <Head title="Lupa Password" />
 
     <div
         class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex flex-col"
@@ -28,7 +32,7 @@ defineProps({
                     class="flex items-center gap-2 text-xl font-bold text-gray-900"
                 >
                     <RocketLaunchIcon class="w-6 h-6 text-indigo-600" />
-                    TopUp Store
+                    {{ appName }}
                 </Link>
                 <Link
                     :href="route('login')"
@@ -181,7 +185,7 @@ defineProps({
         <footer class="bg-white border-t border-gray-100 py-6">
             <div class="max-w-7xl mx-auto px-4 text-center">
                 <p class="text-xs text-gray-400">
-                    &copy; {{ new Date().getFullYear() }} TopUp Store. All
+                    &copy; {{ new Date().getFullYear() }} {{ appName }}. All
                     rights reserved.
                 </p>
             </div>

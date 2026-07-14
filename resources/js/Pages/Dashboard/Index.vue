@@ -64,7 +64,7 @@ const getStatus = (status) => statusConfig[status] || statusConfig.pending;
 
 <template>
     <DashboardLayout>
-        <Head title="Dashboard - TopUp Store" />
+        <Head title="Dashboard" />
 
         <!-- Admin Alert -->
         <div

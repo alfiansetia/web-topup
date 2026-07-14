@@ -5,6 +5,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title inertia>{{ config('app.name', 'TopUp Store') }}</title>
+    <meta name="description" content="{{ config('site.desc', 'Layanan Web Topup') }}">
+    <meta name="keywords" content="{{ config('site.keywoard', 'web,topup') }}">
     @routes
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @inertiaHead

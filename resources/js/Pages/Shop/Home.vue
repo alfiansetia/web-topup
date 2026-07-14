@@ -37,7 +37,7 @@ const getCategoryIcon = (name) => categoryIconMap[name] || ShoppingBagIcon;
 
 <template>
     <ShopLayout>
-        <Head title="TopUp Store - Akun Premium Harga Terjangkau" />
+        <Head title="Akun Premium Harga Terjangkau" />
 
         <!-- Hero Section -->
         <section

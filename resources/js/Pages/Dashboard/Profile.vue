@@ -52,7 +52,7 @@ const updatePassword = () => {
 
 <template>
     <DashboardLayout>
-        <Head title="Profil Saya - TopUp Store" />
+        <Head title="Profil Saya" />
 
         <div class="space-y-6">
             <!-- Profile Info Card -->

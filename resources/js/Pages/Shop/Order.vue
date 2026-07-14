@@ -38,7 +38,7 @@ const status = statusConfig[props.order.status] || statusConfig.pending;
 
 <template>
     <ShopLayout>
-        <Head :title="'Pesanan ' + order.order_number + ' - TopUp Store'" />
+        <Head :title="'Pesanan ' + order.order_number" />
 
         <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <!-- Breadcrumb -->

@@ -9,6 +9,7 @@ const appName = import.meta.env.VITE_APP_NAME || "TopUp Store";
 
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
+    progress: { color: "#4F46E5" },
     resolve: (name) =>
         resolvePageComponent(
             `./Pages/${name}.vue`,

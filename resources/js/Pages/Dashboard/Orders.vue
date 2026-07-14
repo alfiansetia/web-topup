@@ -64,7 +64,7 @@ const getStatus = (status) => statusConfig[status] || statusConfig.pending;
 
 <template>
     <DashboardLayout>
-        <Head title="Pesanan Saya - TopUp Store" />
+        <Head title="Pesanan Saya" />
 
         <div class="space-y-4">
             <!-- Order Cards -->

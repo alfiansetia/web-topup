@@ -10,7 +10,7 @@ import {
 
 const page = usePage();
 const user = computed(() => page.props.auth?.user);
-const appName = computed(() => import.meta.env.VITE_APP_NAME || "TopUp Store");
+const appName = computed(() => page.props.appName || "TopUp Store");
 const mobileMenuOpen = ref(false);
 const userDropdownOpen = ref(false);
 </script>
@@ -281,9 +281,9 @@ const userDropdownOpen = ref(false);
                                     />
                                 </svg>
                             </div>
-                            <span class="font-bold text-gray-900"
-                                >TopUp Store</span
-                            >
+                            <span class="font-bold text-gray-900">{{
+                                appName
+                            }}</span>
                         </div>
                         <p class="text-sm text-gray-500">
                             Akun premium harga terjangkau dengan proses instan
@@ -330,7 +330,7 @@ const userDropdownOpen = ref(false);
                 <div
                     class="border-t border-gray-100 mt-8 pt-6 text-center text-sm text-gray-400"
                 >
-                    &copy; {{ new Date().getFullYear() }} TopUp Store. All
+                    &copy; {{ new Date().getFullYear() }} {{ appName }}. All
                     rights reserved.
                 </div>
             </div>

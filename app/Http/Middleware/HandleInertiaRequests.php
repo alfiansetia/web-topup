@@ -31,6 +31,8 @@ class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
+            'appName' => fn() => config('app.name', 'TopUp Store'),
+            'site' => fn() => config('site'),
             'auth' => [
                 'user' => $request->user() ? [
                     'id' => $request->user()->id,

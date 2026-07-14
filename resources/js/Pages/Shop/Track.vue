@@ -1,7 +1,11 @@
 <script setup>
 import ShopLayout from "@/Layouts/ShopLayout.vue";
-import { Head, Link, useForm } from "@inertiajs/vue3";
+import { Head, Link, useForm, usePage } from "@inertiajs/vue3";
 import { LightBulbIcon } from "@heroicons/vue/24/outline";
+import { computed } from "vue";
+
+const page = usePage();
+const user = computed(() => page.props.auth?.user);
 
 const form = useForm({
     order_number: "",
@@ -16,7 +20,7 @@ const submit = () => {
 
 <template>
     <ShopLayout>
-        <Head title="Lacak Pesanan - TopUp Store" />
+        <Head title="Lacak Pesanan" />
 
         <div class="max-w-lg mx-auto px-4 sm:px-6 lg:px-8 py-16">
             <div class="text-center mb-8">
@@ -41,6 +45,26 @@ const submit = () => {
                 <p class="mt-2 text-sm text-gray-500">
                     Masukkan nomor pesanan untuk melihat status pesanan Anda.
                 </p>
+                <Link
+                    v-if="user"
+                    :href="route('dashboard.orders')"
+                    class="inline-flex items-center gap-1.5 mt-3 text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
+                >
+                    <svg
+                        class="w-4 h-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width="2"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"
+                        />
+                    </svg>
+                    Lihat Semua Pesanan Saya
+                </Link>
             </div>
 
             <div

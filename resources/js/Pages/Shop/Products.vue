@@ -79,7 +79,7 @@ const hasActiveFilters = () => {
 
 <template>
     <ShopLayout>
-        <Head title="Semua Produk - TopUp Store" />
+        <Head title="Semua Produk" />
 
         <!-- Header -->
         <section

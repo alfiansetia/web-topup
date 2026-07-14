@@ -4,7 +4,7 @@ import { Link, usePage } from "@inertiajs/vue3";
 import { computed } from "vue";
 
 const page = usePage();
-const appName = computed(() => import.meta.env.VITE_APP_NAME || "TopUp Store");
+const appName = computed(() => page.props.appName || "TopUp Store");
 </script>
 
 <template>
@@ -53,9 +53,9 @@ const appName = computed(() => import.meta.env.VITE_APP_NAME || "TopUp Store");
                             />
                         </svg>
                     </div>
-                    <span class="text-2xl font-bold tracking-tight"
-                        >TopUp Store</span
-                    >
+                    <span class="text-2xl font-bold tracking-tight">{{
+                        appName
+                    }}</span>
                 </Link>
 
                 <h1 class="text-4xl font-extrabold leading-tight mb-4">
@@ -153,9 +153,9 @@ const appName = computed(() => import.meta.env.VITE_APP_NAME || "TopUp Store");
                             />
                         </svg>
                     </div>
-                    <span class="text-xl font-bold text-gray-900"
-                        >TopUp Store</span
-                    >
+                    <span class="text-xl font-bold text-gray-900">{{
+                        appName
+                    }}</span>
                 </div>
 
                 <slot />
