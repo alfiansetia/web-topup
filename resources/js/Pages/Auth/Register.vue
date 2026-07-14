@@ -53,7 +53,7 @@ import {
                     <h1
                         class="text-xl font-bold text-gray-900 text-center mb-1"
                     >
-                        Buat Akun Baru 🚀
+                        Buat Akun Baru
                     </h1>
                     <p class="text-sm text-gray-500 text-center mb-6">
                         Daftar dengan akun Google Anda untuk mulai berbelanja.

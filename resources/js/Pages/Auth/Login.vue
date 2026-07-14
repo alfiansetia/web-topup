@@ -71,7 +71,7 @@ const submit = () => {
                     <h1
                         class="text-xl font-bold text-gray-900 text-center mb-1"
                     >
-                        Selamat Datang 👋
+                        Selamat Datang
                     </h1>
                     <p class="text-sm text-gray-500 text-center mb-6">
                         Masuk ke akun Anda untuk melanjutkan

@@ -16,6 +16,7 @@ import {
     PaperClipIcon,
     XCircleIcon,
     ArrowLeftIcon,
+    PencilSquareIcon,
 } from "@heroicons/vue/24/outline";
 import Swal from "sweetalert2";
 
@@ -406,7 +407,10 @@ const currentStepIndex = statusSteps.findIndex(
                 <!-- Notes -->
                 <div class="bg-white rounded-xl shadow-sm border p-5">
                     <h2 class="font-semibold text-gray-900 mb-3">
-                        📝 Catatan Admin
+                        <PencilSquareIcon
+                            class="w-5 h-5 inline text-gray-500"
+                        />
+                        Catatan Admin
                     </h2>
                     <form @submit.prevent="saveNotes" class="space-y-3">
                         <textarea
@@ -428,7 +432,8 @@ const currentStepIndex = statusSteps.findIndex(
                 <!-- Timeline -->
                 <div class="bg-white rounded-xl shadow-sm border p-5">
                     <h2 class="font-semibold text-gray-900 mb-3">
-                        🕐 Timeline
+                        <ClockIcon class="w-5 h-5 inline text-gray-500" />
+                        Timeline
                     </h2>
                     <div class="space-y-3 text-sm">
                         <div class="flex gap-3">

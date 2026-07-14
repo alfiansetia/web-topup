@@ -1,6 +1,7 @@
 <script setup>
 import ShopLayout from "@/Layouts/ShopLayout.vue";
 import { Head, Link, useForm } from "@inertiajs/vue3";
+import { LightBulbIcon } from "@heroicons/vue/24/outline";
 
 const form = useForm({
     order_number: "",
@@ -36,9 +37,7 @@ const submit = () => {
                         />
                     </svg>
                 </div>
-                <h1 class="text-2xl font-bold text-gray-900">
-                    Lacak Pesanan 🔍
-                </h1>
+                <h1 class="text-2xl font-bold text-gray-900">Lacak Pesanan</h1>
                 <p class="mt-2 text-sm text-gray-500">
                     Masukkan nomor pesanan untuk melihat status pesanan Anda.
                 </p>
@@ -123,11 +122,10 @@ const submit = () => {
                 <!-- Help text -->
                 <div class="mt-5 p-4 bg-indigo-50 rounded-xl">
                     <p class="text-xs text-indigo-700">
-                        💡 <strong>Tips:</strong> Nomor pesanan dikirimkan ke
-                        email Anda setelah checkout. Format:
-                        <code class="bg-indigo-100 px-1 rounded"
-                            >INV-YYYYMMDD-XXXXX</code
-                        >
+                        <LightBulbIcon class="w-4 h-4 inline text-indigo-500" />
+                        <strong>Tips:</strong> Nomor pesanan dikirimkan ke email
+                        Anda setelah checkout. Format:
+                        <code class="bg-indigo-100 px-1 rounded">A3BF9KXM</code>
                     </p>
                 </div>
             </div>
