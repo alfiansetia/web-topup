@@ -13,6 +13,7 @@ class ProductItem extends Model
         'content',
         'status',
         'order_id',
+        'order_item_id',
     ];
 
     protected $casts = [
@@ -32,5 +33,10 @@ class ProductItem extends Model
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
+    }
+
+    public function orderItem(): BelongsTo
+    {
+        return $this->belongsTo(OrderItem::class, 'order_item_id');
     }
 }

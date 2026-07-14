@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Services\PakasirService;
 use App\Services\TelegramService;
+use App\Mail\OrderPaymentSuccess;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class PakasirWebhookController extends Controller
 {
@@ -56,16 +58,13 @@ class PakasirWebhookController extends Controller
                 'payment_gateway_status' => 'paid',
             ]);
 
-            // Release reserved items → sold
-            $order->items()->each(function ($item) {
-                $item->productItem()->update([
-                    'status'     => 'sold',
-                    'sold_at'    => now(),
-                ]);
-            });
+            // Items tetap 'reserved' — admin akan assign & mark sold saat selesaikan order
 
             // Telegram notification
             $this->telegram->notifyPaid($order);
+
+            // Email notification (queued)
+            Mail::to($order->customer_email)->queue(new OrderPaymentSuccess($order));
 
             Log::info('Order paid via Pakasir', ['order_number' => $order->order_number]);
         }

@@ -17,13 +17,67 @@ import {
     XCircleIcon,
     ArrowLeftIcon,
     PencilSquareIcon,
+    PlusIcon,
+    TrashIcon,
 } from "@heroicons/vue/24/outline";
 import Swal from "sweetalert2";
 
-const props = defineProps({ order: Object });
+const props = defineProps({ order: Object, availableStock: Object });
 
 const notesForm = useForm({ notes: props.order.notes || "" });
 const showAccount = ref({});
+
+// Track assigned items per order item: { orderItemId: [productItemId, ...] }
+const assignments = ref(
+    Object.fromEntries(
+        props.order.items.map((item) => [
+            item.id,
+            (item.assigned_items || []).map((ai) => String(ai.id)),
+        ]),
+    ),
+);
+
+// Filter stok: exclude yang sudah dipilih di row ini ATAU row lain
+const getFilteredStock = (variantId, currentOrderItemId) => {
+    const allStock = props.availableStock[variantId] || [];
+    // Kumpulkan semua product_item_id yang dipilih di SEMUA row
+    const allSelected = Object.entries(assignments.value).flatMap(
+        ([key, ids]) => (key === String(currentOrderItemId) ? [] : ids),
+    );
+    // Tambahkan juga yang sudah di-assign di row ini (supaya tetap muncul)
+    const currentAssigned = assignments.value[String(currentOrderItemId)] || [];
+    return allStock.filter(
+        (s) =>
+            !allSelected.includes(String(s.id)) ||
+            currentAssigned.includes(String(s.id)),
+    );
+};
+
+// Add/remove assignment
+const addAssignment = (orderItemId, productItemId) => {
+    const key = String(orderItemId);
+    if (!assignments.value[key]) assignments.value[key] = [];
+    if (!assignments.value[key].includes(productItemId)) {
+        assignments.value[key].push(productItemId);
+    }
+};
+
+const removeAssignment = (orderItemId, productItemId) => {
+    const key = String(orderItemId);
+    assignments.value[key] = (assignments.value[key] || []).filter(
+        (id) => id !== productItemId,
+    );
+};
+
+// Save assignments
+const assignForm = useForm({ assignments: [] });
+const saveAssignments = () => {
+    assignForm.assignments = props.order.items.map((item) => ({
+        order_item_id: item.id,
+        product_item_ids: assignments.value[String(item.id)] || [],
+    }));
+    assignForm.post(route("admin.orders.assign-items", props.order.id));
+};
 
 const saveNotes = () => {
     notesForm.put(route("admin.orders.notes", props.order.id));
@@ -47,9 +101,23 @@ const verifyPayment = () => {
 };
 
 const completeOrder = () => {
+    // Cek semua item sudah assign sesuai quantity
+    const incomplete = props.order.items.filter(
+        (item) =>
+            (assignments.value[String(item.id)] || []).length < item.quantity,
+    );
+    if (incomplete.length > 0) {
+        Swal.fire(
+            "Belum Lengkap",
+            `${incomplete.length} item belum di-assign akun sesuai quantity. Simpan akun terlebih dahulu.`,
+            "warning",
+        );
+        return;
+    }
+
     Swal.fire({
         title: "Selesaikan Order?",
-        text: "Akun akan dikirim ke pelanggan.",
+        text: "Status akan berubah menjadi selesai dan email dikirim ke pelanggan.",
         icon: "question",
         showCancelButton: true,
         confirmButtonColor: "#4f46e5",
@@ -78,10 +146,6 @@ const cancelOrder = () => {
             router.post(route("admin.orders.cancel", props.order.id));
         }
     });
-};
-
-const toggleAccount = (id) => {
-    showAccount.value[id] = !showAccount.value[id];
 };
 
 const formatCurrency = (val) =>
@@ -229,7 +293,7 @@ const currentStepIndex = statusSteps.findIndex(
                                     Produk
                                 </th>
                                 <th class="px-5 py-3 text-gray-500 font-medium">
-                                    Varian
+                                    Qty
                                 </th>
                                 <th class="px-5 py-3 text-gray-500 font-medium">
                                     Harga
@@ -247,53 +311,200 @@ const currentStepIndex = statusSteps.findIndex(
                             >
                                 <td class="px-5 py-3 font-medium">
                                     {{ item.product_name }}
+                                    <div class="text-xs text-gray-500">
+                                        {{ item.variant_name }}
+                                    </div>
                                 </td>
-                                <td class="px-5 py-3">
-                                    {{ item.variant_name }}
-                                </td>
+                                <td class="px-5 py-3">×{{ item.quantity }}</td>
                                 <td class="px-5 py-3">
                                     {{ formatCurrency(item.price) }}
+                                    <div class="text-xs text-gray-500">
+                                        Total:
+                                        {{
+                                            formatCurrency(
+                                                item.price * item.quantity,
+                                            )
+                                        }}
+                                    </div>
                                 </td>
                                 <td class="px-5 py-3">
+                                    <!-- Status completed: tampilkan akun readonly -->
                                     <div
-                                        v-if="
-                                            item.product_item &&
-                                            order.status === 'completed'
-                                        "
-                                        class="flex items-center gap-2"
+                                        v-if="order.status === 'completed'"
+                                        class="space-y-1.5"
                                     >
-                                        <code
-                                            class="text-xs bg-gray-50 px-2 py-1 rounded border font-mono"
+                                        <div
+                                            v-for="assigned in item.assigned_items"
+                                            :key="assigned.id"
+                                            class="flex items-center gap-2"
+                                        >
+                                            <code
+                                                class="text-xs bg-gray-50 px-2 py-1 rounded border font-mono"
+                                            >
+                                                {{
+                                                    showAccount[assigned.id]
+                                                        ? assigned.content
+                                                        : "••••••••"
+                                                }}
+                                            </code>
+                                            <button
+                                                @click="
+                                                    showAccount[assigned.id] =
+                                                        !showAccount[
+                                                            assigned.id
+                                                        ]
+                                                "
+                                                class="text-gray-400 hover:text-gray-600 text-xs"
+                                            >
+                                                <EyeSlashIcon
+                                                    v-if="
+                                                        showAccount[assigned.id]
+                                                    "
+                                                    class="w-4 h-4"
+                                                />
+                                                <EyeIcon
+                                                    v-else
+                                                    class="w-4 h-4"
+                                                />
+                                            </button>
+                                            <button
+                                                @click="
+                                                    navigator.clipboard.writeText(
+                                                        assigned.content,
+                                                    )
+                                                "
+                                                class="text-gray-400 hover:text-gray-600 text-xs"
+                                            >
+                                                <ClipboardIcon
+                                                    class="w-4 h-4"
+                                                />
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <!-- Status paid: assign akun (multi) -->
+                                    <div
+                                        v-else-if="order.status === 'paid'"
+                                        class="space-y-1.5"
+                                    >
+                                        <!-- Daftar akun yang sudah di-assign -->
+                                        <div
+                                            v-for="piId in assignments[
+                                                String(item.id)
+                                            ] || []"
+                                            :key="piId"
+                                            class="flex items-center gap-2"
+                                        >
+                                            <code
+                                                class="text-xs bg-indigo-50 px-2 py-1 rounded border font-mono truncate max-w-[200px]"
+                                            >
+                                                {{
+                                                    (
+                                                        availableStock[
+                                                            item.variant_id
+                                                        ] || []
+                                                    ).find(
+                                                        (s) =>
+                                                            String(s.id) ===
+                                                            piId,
+                                                    )?.content || piId
+                                                }}
+                                            </code>
+                                            <button
+                                                @click="
+                                                    removeAssignment(
+                                                        item.id,
+                                                        piId,
+                                                    )
+                                                "
+                                                class="text-red-400 hover:text-red-600"
+                                                title="Hapus"
+                                            >
+                                                <TrashIcon class="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                        <!-- Dropdown tambah akun -->
+                                        <div
+                                            v-if="
+                                                (
+                                                    assignments[
+                                                        String(item.id)
+                                                    ] || []
+                                                ).length < item.quantity
+                                            "
+                                            class="flex items-center gap-2"
+                                        >
+                                            <select
+                                                @change="
+                                                    (e) => {
+                                                        if (e.target.value) {
+                                                            addAssignment(
+                                                                item.id,
+                                                                e.target.value,
+                                                            );
+                                                            e.target.value = '';
+                                                        }
+                                                    }
+                                                "
+                                                class="text-xs border-gray-300 rounded shadow-sm focus:ring-indigo-500 focus:border-indigo-500 max-w-[250px]"
+                                            >
+                                                <option value="">
+                                                    + Tambah akun...
+                                                </option>
+                                                <option
+                                                    v-for="stock in getFilteredStock(
+                                                        item.variant_id,
+                                                        item.id,
+                                                    ).filter(
+                                                        (s) =>
+                                                            !(
+                                                                assignments[
+                                                                    String(
+                                                                        item.id,
+                                                                    )
+                                                                ] || []
+                                                            ).includes(
+                                                                String(s.id),
+                                                            ),
+                                                    )"
+                                                    :key="stock.id"
+                                                    :value="String(stock.id)"
+                                                >
+                                                    {{
+                                                        stock.content.substring(
+                                                            0,
+                                                            50,
+                                                        )
+                                                    }}{{
+                                                        stock.content.length >
+                                                        50
+                                                            ? "..."
+                                                            : ""
+                                                    }}
+                                                </option>
+                                            </select>
+                                        </div>
+                                        <!-- Badge jumlah assigned -->
+                                        <div
+                                            v-if="
+                                                (
+                                                    assignments[
+                                                        String(item.id)
+                                                    ] || []
+                                                ).length > 0
+                                            "
+                                            class="text-xs text-gray-500 mt-1"
                                         >
                                             {{
-                                                showAccount[item.id]
-                                                    ? item.product_item.content
-                                                    : "••••••••"
-                                            }}
-                                        </code>
-                                        <button
-                                            @click="toggleAccount(item.id)"
-                                            class="text-gray-400 hover:text-gray-600 text-xs"
-                                        >
-                                            <EyeSlashIcon
-                                                v-if="showAccount[item.id]"
-                                                class="w-4 h-4"
-                                            />
-                                            <EyeIcon v-else class="w-4 h-4" />
-                                        </button>
-                                        <button
-                                            @click="
-                                                navigator.clipboard.writeText(
-                                                    item.product_item.content,
-                                                )
-                                            "
-                                            class="text-gray-400 hover:text-gray-600 text-xs"
-                                        >
-                                            <ClipboardIcon class="w-4 h-4" />
-                                        </button>
+                                                (
+                                                    assignments[
+                                                        String(item.id)
+                                                    ] || []
+                                                ).length
+                                            }}/{{ item.quantity }} akun dipilih
+                                        </div>
                                     </div>
                                     <span v-else class="text-gray-400 text-xs"
-                                        >Menunggu selesai</span
+                                        >Menunggu pembayaran</span
                                     >
                                 </td>
                             </tr>
@@ -313,7 +524,7 @@ const currentStepIndex = statusSteps.findIndex(
 
                 <!-- Payment Gateway Info -->
                 <div
-                    v-if="order.payment_ref"
+                    v-if="order.payment_gateway_status"
                     class="bg-white rounded-xl shadow-sm border p-5"
                 >
                     <h2 class="font-semibold text-gray-900 mb-3">
@@ -322,9 +533,9 @@ const currentStepIndex = statusSteps.findIndex(
                     </h2>
                     <dl class="grid grid-cols-2 gap-3 text-sm">
                         <div>
-                            <dt class="text-gray-500">Ref ID</dt>
+                            <dt class="text-gray-500">No. Order (Ref)</dt>
                             <dd class="font-mono text-xs">
-                                {{ order.payment_ref }}
+                                {{ order.order_number }}
                             </dd>
                         </div>
                         <div>
@@ -378,11 +589,24 @@ const currentStepIndex = statusSteps.findIndex(
                         </button>
                         <button
                             v-if="order.status === 'paid'"
+                            @click="saveAssignments"
+                            :disabled="assignForm.processing"
+                            class="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                        >
+                            <ArchiveBoxIcon class="w-5 h-5 inline" />
+                            {{
+                                assignForm.processing
+                                    ? "Menyimpan..."
+                                    : "Simpan Akun"
+                            }}
+                        </button>
+                        <button
+                            v-if="order.status === 'paid'"
                             @click="completeOrder"
                             class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"
                         >
-                            <ArchiveBoxIcon class="w-5 h-5 inline" /> Selesaikan
-                            & Kirim Akun
+                            <CheckCircleIcon class="w-5 h-5 inline" />
+                            Selesaikan Order
                         </button>
                         <button
                             v-if="['pending', 'paid'].includes(order.status)"

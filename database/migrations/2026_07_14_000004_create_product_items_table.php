@@ -18,6 +18,7 @@ return new class extends Migration
             $table->text('content');                                // Isi akun: email:password atau data lainnya
             $table->enum('status', ['available', 'sold', 'reserved'])->default('available');
             $table->foreignId('order_id')->nullable();              // Terkait order saat terjual
+            $table->foreignId('order_item_id')->nullable();
             $table->timestamps();
 
             $table->index('status');                                // Index untuk query cepat cek stok

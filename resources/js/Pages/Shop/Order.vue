@@ -12,6 +12,7 @@ const qrDataUrl = ref("");
 const payment = props.order.payment_gateway_response || null;
 const isPaymentPending = props.order.status === "pending" && payment;
 const isPaymentExpired = ref(false);
+const showAccount = ref({});
 
 const formatPrice = (price) => {
     return new Intl.NumberFormat("id-ID", {
@@ -365,6 +366,339 @@ onMounted(async () => {
 
                 <!-- Order Info -->
                 <div class="p-6">
+                    <!-- Timeline -->
+                    <div class="mb-6">
+                        <template v-if="order.status !== 'cancelled'">
+                            <div class="flex items-start gap-4">
+                                <!-- Step 1: Dibuat -->
+                                <div class="flex flex-col items-center">
+                                    <div
+                                        class="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0"
+                                    >
+                                        <svg
+                                            class="w-4 h-4 text-white"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke-width="2.5"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                                            />
+                                        </svg>
+                                    </div>
+                                    <div class="w-0.5 h-8 bg-green-300"></div>
+                                </div>
+                                <div class="pb-2">
+                                    <p
+                                        class="text-sm font-semibold text-gray-900"
+                                    >
+                                        Pesanan Dibuat
+                                    </p>
+                                    <p class="text-xs text-gray-500">
+                                        {{ formatDate(order.created_at) }}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start gap-4">
+                                <!-- Step 2: Pembayaran -->
+                                <div class="flex flex-col items-center">
+                                    <div
+                                        :class="
+                                            order.paid_at ||
+                                            order.status === 'paid'
+                                                ? 'bg-green-500'
+                                                : order.status === 'pending'
+                                                  ? 'bg-blue-500'
+                                                  : 'bg-gray-300'
+                                        "
+                                        class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+                                    >
+                                        <svg
+                                            v-if="
+                                                order.paid_at ||
+                                                order.status === 'paid' ||
+                                                order.status === 'completed'
+                                            "
+                                            class="w-4 h-4 text-white"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke-width="2.5"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                                            />
+                                        </svg>
+                                        <svg
+                                            v-else
+                                            class="w-4 h-4 text-white"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke-width="2"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                                            />
+                                        </svg>
+                                    </div>
+                                    <div
+                                        :class="
+                                            order.paid_at ||
+                                            order.status === 'paid' ||
+                                            order.status === 'completed'
+                                                ? 'bg-green-300'
+                                                : 'bg-gray-200'
+                                        "
+                                        class="w-0.5 h-8"
+                                    ></div>
+                                </div>
+                                <div class="pb-2">
+                                    <p
+                                        class="text-sm font-semibold"
+                                        :class="
+                                            order.paid_at ||
+                                            order.status === 'paid' ||
+                                            order.status === 'completed'
+                                                ? 'text-gray-900'
+                                                : order.status === 'pending'
+                                                  ? 'text-blue-600'
+                                                  : 'text-gray-400'
+                                        "
+                                    >
+                                        Pembayaran
+                                    </p>
+                                    <p class="text-xs text-gray-500">
+                                        {{
+                                            order.paid_at
+                                                ? formatDate(order.paid_at)
+                                                : order.status === "pending"
+                                                  ? "Menunggu pembayaran..."
+                                                  : "-"
+                                        }}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start gap-4">
+                                <!-- Step 3: Diproses -->
+                                <div class="flex flex-col items-center">
+                                    <div
+                                        :class="
+                                            order.status === 'completed'
+                                                ? 'bg-green-500'
+                                                : order.status === 'paid'
+                                                  ? 'bg-blue-500'
+                                                  : 'bg-gray-300'
+                                        "
+                                        class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+                                    >
+                                        <svg
+                                            v-if="order.status === 'completed'"
+                                            class="w-4 h-4 text-white"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke-width="2.5"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                                            />
+                                        </svg>
+                                        <svg
+                                            v-else
+                                            class="w-4 h-4 text-white"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke-width="2"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                d="M9.75 3.104v5.714a2.25 2.25 0 0 1-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 0 1 4.5 0m0 0v5.714a2.25 2.25 0 0 0 .659 1.591L19 14.5M14.25 3.104c.251.023.501.05.75.082M19 14.5l-1.756 5.268A1.125 1.125 0 0 1 16.134 21H7.866a1.125 1.125 0 0 1-1.11-1.232L5 14.5m14 0H5"
+                                            />
+                                        </svg>
+                                    </div>
+                                    <div
+                                        :class="
+                                            order.status === 'completed'
+                                                ? 'bg-green-300'
+                                                : 'bg-gray-200'
+                                        "
+                                        class="w-0.5 h-8"
+                                    ></div>
+                                </div>
+                                <div class="pb-2">
+                                    <p
+                                        class="text-sm font-semibold"
+                                        :class="
+                                            order.status === 'completed'
+                                                ? 'text-gray-900'
+                                                : order.status === 'paid'
+                                                  ? 'text-blue-600'
+                                                  : 'text-gray-400'
+                                        "
+                                    >
+                                        Sedang Diproses
+                                    </p>
+                                    <p class="text-xs text-gray-500">
+                                        {{
+                                            order.status === "completed" ||
+                                            order.status === "paid"
+                                                ? "Admin sedang menyiapkan akun"
+                                                : "-"
+                                        }}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start gap-4">
+                                <!-- Step 4: Selesai -->
+                                <div class="flex flex-col items-center">
+                                    <div
+                                        :class="
+                                            order.status === 'completed'
+                                                ? 'bg-green-500'
+                                                : 'bg-gray-300'
+                                        "
+                                        class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+                                    >
+                                        <svg
+                                            v-if="order.status === 'completed'"
+                                            class="w-4 h-4 text-white"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke-width="2.5"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                                            />
+                                        </svg>
+                                        <svg
+                                            v-else
+                                            class="w-4 h-4 text-white"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke-width="2"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                d="M21 11.25v8.25a1.5 1.5 0 0 1-1.5 1.5H5.25a1.5 1.5 0 0 1-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 1 0 9.375 7.5H12m0-2.625V7.5m0-2.625A2.625 2.625 0 1 1 14.625 7.5H12m0 0V21m-8.625-9.75h18c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125h-18c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z"
+                                            />
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p
+                                        class="text-sm font-semibold"
+                                        :class="
+                                            order.status === 'completed'
+                                                ? 'text-gray-900'
+                                                : 'text-gray-400'
+                                        "
+                                    >
+                                        Selesai
+                                    </p>
+                                    <p class="text-xs text-gray-500">
+                                        {{
+                                            order.completed_at
+                                                ? formatDate(order.completed_at)
+                                                : "-"
+                                        }}
+                                    </p>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!-- Cancelled timeline -->
+                        <template v-else>
+                            <div class="flex items-start gap-4">
+                                <div class="flex flex-col items-center">
+                                    <div
+                                        class="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0"
+                                    >
+                                        <svg
+                                            class="w-4 h-4 text-white"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke-width="2.5"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                                            />
+                                        </svg>
+                                    </div>
+                                    <div class="w-0.5 h-8 bg-red-200"></div>
+                                </div>
+                                <div class="pb-2">
+                                    <p
+                                        class="text-sm font-semibold text-gray-900"
+                                    >
+                                        Pesanan Dibuat
+                                    </p>
+                                    <p class="text-xs text-gray-500">
+                                        {{ formatDate(order.created_at) }}
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-4">
+                                <div class="flex flex-col items-center">
+                                    <div
+                                        class="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center flex-shrink-0"
+                                    >
+                                        <svg
+                                            class="w-4 h-4 text-white"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke-width="2"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                                            />
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p
+                                        class="text-sm font-semibold text-red-600"
+                                    >
+                                        Dibatalkan
+                                    </p>
+                                    <p class="text-xs text-gray-500">
+                                        {{
+                                            order.payment_gateway_status ===
+                                            "expired"
+                                                ? "Kedaluwarsa — tidak dibayar dalam 1 jam"
+                                                : "Dibatalkan oleh admin"
+                                        }}
+                                    </p>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
                     <div class="grid grid-cols-2 gap-4 text-sm">
                         <div>
                             <span class="text-gray-500">Nama</span>
@@ -402,20 +736,129 @@ onMounted(async () => {
                         <div
                             v-for="item in order.items"
                             :key="item.id"
-                            class="flex items-center justify-between p-3 bg-gray-50 rounded-xl"
+                            class="p-3 bg-gray-50 rounded-xl"
                         >
-                            <div>
-                                <p class="font-medium text-sm text-gray-900">
-                                    {{ item.product_name }}
-                                </p>
-                                <p class="text-xs text-gray-500">
-                                    {{ item.variant_name }}
-                                </p>
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p
+                                        class="font-medium text-sm text-gray-900"
+                                    >
+                                        {{ item.product_name }}
+                                    </p>
+                                    <p class="text-xs text-gray-500">
+                                        {{ item.variant_name }} ×
+                                        {{ item.quantity }}
+                                    </p>
+                                </div>
+                                <div class="text-right">
+                                    <p
+                                        class="font-medium text-sm text-gray-900"
+                                    >
+                                        {{ formatPrice(item.subtotal) }}
+                                    </p>
+                                </div>
                             </div>
-                            <div class="text-right">
-                                <p class="font-medium text-sm text-gray-900">
-                                    {{ formatPrice(item.subtotal) }}
+                            <!-- Akun yang diberikan (completed) -->
+                            <div
+                                v-if="
+                                    order.status === 'completed' &&
+                                    item.assigned_items &&
+                                    item.assigned_items.length > 0
+                                "
+                                class="mt-3 pt-3 border-t border-gray-200 space-y-2"
+                            >
+                                <p class="text-xs font-semibold text-gray-600">
+                                    Akun Anda:
                                 </p>
+                                <div
+                                    v-for="(acc, idx) in item.assigned_items"
+                                    :key="acc.id"
+                                    class="flex items-center gap-2"
+                                >
+                                    <span class="text-xs text-gray-500 w-5"
+                                        >{{ idx + 1 }}.</span
+                                    >
+                                    <code
+                                        class="text-xs bg-white px-2.5 py-1.5 rounded-lg border font-mono flex-1 break-all"
+                                    >
+                                        {{
+                                            showAccount[acc.id]
+                                                ? acc.content
+                                                : "••••••••••••"
+                                        }}
+                                    </code>
+                                    <button
+                                        @click="
+                                            showAccount[acc.id] =
+                                                !showAccount[acc.id]
+                                        "
+                                        class="text-gray-400 hover:text-indigo-600 p-1 rounded transition-colors"
+                                        :title="
+                                            showAccount[acc.id]
+                                                ? 'Sembunyikan'
+                                                : 'Tampilkan'
+                                        "
+                                    >
+                                        <!-- Eye icon -->
+                                        <svg
+                                            v-if="!showAccount[acc.id]"
+                                            class="w-4 h-4"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke-width="1.5"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"
+                                            />
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                                            />
+                                        </svg>
+                                        <!-- EyeSlash icon -->
+                                        <svg
+                                            v-else
+                                            class="w-4 h-4"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke-width="1.5"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88"
+                                            />
+                                        </svg>
+                                    </button>
+                                    <button
+                                        @click="
+                                            navigator.clipboard.writeText(
+                                                acc.content,
+                                            )
+                                        "
+                                        class="text-gray-400 hover:text-indigo-600 p-1 rounded transition-colors"
+                                        title="Salin"
+                                    >
+                                        <svg
+                                            class="w-4 h-4"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke-width="1.5"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9.75a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184"
+                                            />
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>

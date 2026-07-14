@@ -9,10 +9,12 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Services\PakasirService;
 use App\Services\TelegramService;
+use App\Mail\OrderPendingPayment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 
 class ShopController extends Controller
@@ -177,24 +179,24 @@ class ShopController extends Controller
                 'notes' => $validated['notes'] ?? null,
             ]);
 
-            // Buat order items & reserve stock
-            foreach ($availableItems as $item) {
-                OrderItem::create([
-                    'order_id' => $order->id,
-                    'product_id' => $variant->product_id,
-                    'variant_id' => $variant->id,
-                    'product_item_id' => $item->id,
-                    'product_name' => $variant->product->name,
-                    'variant_name' => $variant->name,
-                    'price' => $unitPrice,
-                    'quantity' => 1,
-                    'subtotal' => $unitPrice,
-                ]);
+            // Buat 1 order item per variant (grouped by qty)
+            $orderItem = OrderItem::create([
+                'order_id' => $order->id,
+                'product_id' => $variant->product_id,
+                'variant_id' => $variant->id,
+                'product_name' => $variant->product->name,
+                'variant_name' => $variant->name,
+                'price' => $unitPrice,
+                'quantity' => $validated['quantity'],
+                'subtotal' => $totalAmount,
+            ]);
 
-                // Mark item as reserved
+            // Reserve stock & assign ke order item
+            foreach ($availableItems as $item) {
                 $item->update([
                     'status' => 'reserved',
                     'order_id' => $order->id,
+                    'order_item_id' => $orderItem->id,
                 ]);
             }
 
@@ -223,6 +225,9 @@ class ShopController extends Controller
             // Telegram notification (non-blocking, after commit)
             $this->telegram->notifyNewOrder($order);
 
+            // Email notification (queued)
+            Mail::to($order->customer_email)->queue(new OrderPendingPayment($order));
+
             return redirect()->route('shop.order', $order->order_number)
                 ->with('success', 'Pesanan berhasil dibuat! Silakan lakukan pembayaran.');
         } catch (\Exception $e) {
@@ -240,7 +245,7 @@ class ShopController extends Controller
     public function order($orderNumber)
     {
         $order = Order::where('order_number', $orderNumber)
-            ->with(['items', 'items.product', 'items.variant'])
+            ->with(['items', 'items.product', 'items.variant', 'items.assignedItems'])
             ->firstOrFail();
 
         return Inertia::render('Shop/Order', [

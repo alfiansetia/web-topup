@@ -16,7 +16,6 @@ return new class extends Migration
             $table->foreignId('order_id')->constrained()->cascadeOnDelete();
             $table->foreignId('product_id')->constrained();
             $table->foreignId('variant_id')->constrained('product_variants');
-            $table->foreignId('product_item_id')->nullable();  // Akun yang diberikan ke user
             $table->string('product_name');                     // Snapshot: "YouTube Premium"
             $table->string('variant_name');                     // Snapshot: "Private 1 Bulan"
             $table->decimal('price', 12, 2);                    // Snapshot harga saat beli

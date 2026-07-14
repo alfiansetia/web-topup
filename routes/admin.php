@@ -46,6 +46,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::put('users/{user}/toggle-block', [AdminUserController::class, 'toggleBlock'])->name('users.toggle-block');
     Route::delete('users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
     Route::post('orders/{order}/verify', [AdminOrderController::class, 'verifyPayment'])->name('orders.verify');
+    Route::post('orders/{order}/assign-items', [AdminOrderController::class, 'assignItems'])->name('orders.assign-items');
     Route::post('orders/{order}/complete', [AdminOrderController::class, 'complete'])->name('orders.complete');
     Route::post('orders/{order}/cancel', [AdminOrderController::class, 'cancel'])->name('orders.cancel');
     Route::put('orders/{order}/notes', [AdminOrderController::class, 'updateNotes'])->name('orders.notes');
