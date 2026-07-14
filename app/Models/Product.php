@@ -15,6 +15,7 @@ class Product extends Model
         'slug',
         'description',
         'features',
+        'checkout_instruction',
         'image',
         'is_active',
         'sort_order',

@@ -56,7 +56,7 @@ const submit = () => {
                             v-model="form.order_number"
                             type="text"
                             required
-                            placeholder="A3BF9KXM"
+                            placeholder="INV-A3BF9KXM"
                             class="block w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-all"
                         />
                         <p

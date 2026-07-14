@@ -326,6 +326,29 @@ const submitOrder = () => {
                                 @submit.prevent="submitOrder"
                                 class="space-y-4"
                             >
+                                <!-- Checkout Instruction -->
+                                <div
+                                    v-if="product.checkout_instruction"
+                                    class="flex items-start gap-3 p-4 bg-amber-50 rounded-xl border border-amber-200"
+                                >
+                                    <svg
+                                        class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke-width="2"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"
+                                        />
+                                    </svg>
+                                    <p class="text-sm text-amber-800">
+                                        {{ product.checkout_instruction }}
+                                    </p>
+                                </div>
+
                                 <!-- Notes -->
                                 <div>
                                     <label
@@ -352,6 +375,7 @@ const submitOrder = () => {
                                         v-model.number="form.quantity"
                                         type="number"
                                         min="1"
+                                        max="10"
                                         required
                                         class="block w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-all"
                                     />

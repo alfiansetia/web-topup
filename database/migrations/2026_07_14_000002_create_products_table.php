@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('slug')->unique();              // youtube-premium, netflix
             $table->text('description')->nullable();       // Deskripsi produk
             $table->text('features')->nullable();          // Fitur-fitur (JSON array)
+            $table->string('checkout_instruction')->nullable();
             $table->string('image')->nullable();           // Gambar produk
             $table->boolean('is_active')->default(true);   // Aktif/nonaktif
             $table->integer('sort_order')->default(0);     // Urutan tampil

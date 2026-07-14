@@ -44,6 +44,7 @@ class DatabaseSeeder extends Seeder
                     [
                         'name' => 'YouTube Premium',
                         'description' => 'Nikmati YouTube tanpa iklan, background play, dan YouTube Music Premium.',
+                        'checkout_instruction' => 'Cantumkan email akun YouTube Anda di kolom keterangan.',
                         'features' => ['Tanpa Iklan', 'Background Play', 'YouTube Music', 'Download Offline'],
                         'sort_order' => 1,
                         'variants' => [
@@ -56,6 +57,7 @@ class DatabaseSeeder extends Seeder
                     [
                         'name' => 'Netflix Premium',
                         'description' => 'Tonton film dan series Netflix resolusi 4K di 4 perangkat sekaligus.',
+                        'checkout_instruction' => 'Masukkan email dan password akun Netflix pada kolom keterangan.',
                         'features' => ['4K Ultra HD', '4 Layar Bersamaan', 'Download Offline', 'Semua Konten'],
                         'sort_order' => 2,
                         'variants' => [
@@ -85,6 +87,7 @@ class DatabaseSeeder extends Seeder
                     [
                         'name' => 'Mobile Legends',
                         'description' => 'Diamond Mobile Legends harga termurah dan proses cepat.',
+                        'checkout_instruction' => 'Cantumkan User ID dan Zone ID game Anda di kolom keterangan.',
                         'features' => ['Proses Otomatis', 'Harga Termurah', 'Aman 100%'],
                         'sort_order' => 1,
                         'variants' => [
@@ -115,6 +118,7 @@ class DatabaseSeeder extends Seeder
                     [
                         'name' => 'Microsoft 365',
                         'description' => 'Akses Word, Excel, PowerPoint, dan 1TB OneDrive.',
+                        'checkout_instruction' => 'Tulis nama lengkap untuk aktivasi akun Microsoft 365 Anda.',
                         'features' => ['Word, Excel, PowerPoint', '1TB OneDrive', 'Email Outlook', '1 Akun 5 Device'],
                         'sort_order' => 1,
                         'variants' => [

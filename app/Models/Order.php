@@ -55,7 +55,7 @@ class Order extends Model
             $number = strtoupper(bin2hex(random_bytes(4))); // 8 hex chars
         } while (static::where('order_number', $number)->exists());
 
-        return $number;
+        return 'INV-' . $number;
     }
 
     // Scope: filter by status
