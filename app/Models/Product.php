@@ -25,7 +25,7 @@ class Product extends Model
         'features' => 'array',
     ];
 
-    protected $appends = ['image_url'];
+    protected $appends = ['image_url', 'min_price'];
 
     protected function imageUrl(): Attribute
     {

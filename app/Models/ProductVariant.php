@@ -26,6 +26,8 @@ class ProductVariant extends Model
         'is_active' => 'boolean',
     ];
 
+    protected $appends = ['effective_price', 'is_discounted'];
+
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
