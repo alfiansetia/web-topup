@@ -7,6 +7,7 @@ import {
     ShoppingBagIcon,
     ClipboardDocumentListIcon,
     UsersIcon,
+    Cog6ToothIcon,
     Bars3Icon,
     ArrowLeftStartOnRectangleIcon,
     CheckCircleIcon,
@@ -32,6 +33,7 @@ const navItems = [
         icon: ClipboardDocumentListIcon,
     },
     { name: "Pengguna", route: "admin.users.index", icon: UsersIcon },
+    { name: "Pengaturan", route: "admin.settings.index", icon: Cog6ToothIcon },
 ];
 
 const isActive = (routeName) => {

@@ -1,10 +1,17 @@
 <script setup>
 import ShopLayout from "@/Layouts/ShopLayout.vue";
-import { Head, Link, useForm } from "@inertiajs/vue3";
+import { Head, Link } from "@inertiajs/vue3";
+import { ref, onMounted } from "vue";
+import QRCode from "qrcode";
 
 const props = defineProps({
     order: Object,
 });
+
+const qrDataUrl = ref("");
+const payment = props.order.payment_gateway_response || null;
+const isPaymentPending = props.order.status === "pending" && payment;
+const isPaymentExpired = ref(false);
 
 const formatPrice = (price) => {
     return new Intl.NumberFormat("id-ID", {
@@ -34,6 +41,48 @@ const statusConfig = {
 };
 
 const status = statusConfig[props.order.status] || statusConfig.pending;
+
+const formatCountdown = (expiredAt) => {
+    if (!expiredAt) return "";
+    const now = new Date();
+    const exp = new Date(expiredAt);
+    const diff = exp - now;
+    if (diff <= 0) {
+        isPaymentExpired.value = true;
+        return "Kedaluwarsa";
+    }
+    const hours = Math.floor(diff / 3600000);
+    const minutes = Math.floor((diff % 3600000) / 60000);
+    const seconds = Math.floor((diff % 60000) / 1000);
+    return `${hours}j ${minutes}m ${seconds}s`;
+};
+
+const countdown = ref("");
+let countdownInterval = null;
+
+onMounted(async () => {
+    // Generate QR code from payment_number (EMV QRIS string)
+    if (isPaymentPending && payment.payment_number) {
+        try {
+            qrDataUrl.value = await QRCode.toDataURL(payment.payment_number, {
+                width: 280,
+                margin: 2,
+                color: { dark: "#000000", light: "#ffffff" },
+            });
+        } catch (err) {
+            console.error("QR generation failed:", err);
+        }
+    }
+
+    // Start countdown if pending
+    if (isPaymentPending && payment.expired_at) {
+        countdown.value = formatCountdown(payment.expired_at);
+        countdownInterval = setInterval(() => {
+            countdown.value = formatCountdown(payment.expired_at);
+            if (isPaymentExpired.value) clearInterval(countdownInterval);
+        }, 1000);
+    }
+});
 </script>
 
 <template>
@@ -81,6 +130,123 @@ const status = statusConfig[props.order.status] || statusConfig.pending;
                     />
                 </svg>
                 <span>{{ $page.props.flash.success }}</span>
+            </div>
+
+            <!-- QRIS Payment Section (when pending) -->
+            <div
+                v-if="isPaymentPending && !isPaymentExpired"
+                class="mb-6 bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm"
+            >
+                <div class="bg-yellow-50 border-b border-yellow-100 px-6 py-4">
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center"
+                        >
+                            <svg
+                                class="w-5 h-5 text-yellow-600"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke-width="2"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                                />
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-bold text-gray-900">
+                                Scan QRIS untuk Bayar
+                            </h2>
+                            <p class="text-sm text-gray-500">
+                                Berlaku hingga
+                                {{ formatDate(payment.expired_at) }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-6">
+                    <div class="flex flex-col items-center">
+                        <!-- QR Code Image -->
+                        <div
+                            class="bg-white p-3 rounded-xl border border-gray-200 shadow-sm mb-4"
+                        >
+                            <img
+                                v-if="qrDataUrl"
+                                :src="qrDataUrl"
+                                alt="QRIS Code"
+                                class="w-[280px] h-[280px]"
+                            />
+                            <div
+                                v-else
+                                class="w-[280px] h-[280px] flex items-center justify-center bg-gray-50 rounded-lg"
+                            >
+                                <span class="text-gray-400 text-sm"
+                                    >Memuat QR Code...</span
+                                >
+                            </div>
+                        </div>
+
+                        <!-- Countdown -->
+                        <div
+                            class="flex items-center gap-2 text-sm mb-4"
+                            :class="
+                                isPaymentExpired
+                                    ? 'text-red-600'
+                                    : 'text-yellow-700'
+                            "
+                        >
+                            <svg
+                                class="w-4 h-4"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke-width="2"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                                />
+                            </svg>
+                            <span class="font-medium">{{
+                                isPaymentExpired
+                                    ? "Pembayaran kedaluwarsa"
+                                    : "Batas waktu: " + countdown
+                            }}</span>
+                        </div>
+
+                        <!-- Price Breakdown -->
+                        <div
+                            class="w-full max-w-xs bg-gray-50 rounded-xl p-4 space-y-2 text-sm"
+                        >
+                            <div class="flex justify-between text-gray-600">
+                                <span>Harga Produk</span>
+                                <span>{{ formatPrice(payment.amount) }}</span>
+                            </div>
+                            <div class="flex justify-between text-gray-600">
+                                <span>Biaya Admin (QRIS)</span>
+                                <span>{{ formatPrice(payment.fee) }}</span>
+                            </div>
+                            <div
+                                class="border-t border-gray-200 pt-2 flex justify-between font-bold text-gray-900"
+                            >
+                                <span>Total Pembayaran</span>
+                                <span class="text-indigo-600">{{
+                                    formatPrice(payment.total_payment)
+                                }}</span>
+                            </div>
+                        </div>
+
+                        <p class="mt-3 text-xs text-gray-400 text-center">
+                            Scan kode QR di atas menggunakan aplikasi e-wallet
+                            atau mobile banking Anda
+                        </p>
+                    </div>
+                </div>
             </div>
 
             <!-- Order Header -->
@@ -257,14 +423,39 @@ const status = statusConfig[props.order.status] || statusConfig.pending;
 
                 <!-- Total -->
                 <div class="border-t border-gray-100 px-6 py-4 bg-gray-50">
-                    <div class="flex items-center justify-between">
-                        <span class="text-base font-bold text-gray-900"
-                            >Total Pembayaran</span
+                    <!-- Show Pakasir total if payment exists and has fee -->
+                    <template v-if="payment && payment.fee > 0">
+                        <div class="space-y-1.5 text-sm mb-3">
+                            <div class="flex justify-between text-gray-600">
+                                <span>Harga Produk</span>
+                                <span>{{ formatPrice(payment.amount) }}</span>
+                            </div>
+                            <div class="flex justify-between text-gray-600">
+                                <span>Biaya Admin</span>
+                                <span>{{ formatPrice(payment.fee) }}</span>
+                            </div>
+                        </div>
+                        <div
+                            class="border-t border-gray-200 pt-3 flex items-center justify-between"
                         >
-                        <span class="text-xl font-bold text-indigo-600">{{
-                            formatPrice(order.total_amount)
-                        }}</span>
-                    </div>
+                            <span class="text-base font-bold text-gray-900"
+                                >Total Pembayaran</span
+                            >
+                            <span class="text-xl font-bold text-indigo-600">{{
+                                formatPrice(payment.total_payment)
+                            }}</span>
+                        </div>
+                    </template>
+                    <template v-else>
+                        <div class="flex items-center justify-between">
+                            <span class="text-base font-bold text-gray-900"
+                                >Total Pembayaran</span
+                            >
+                            <span class="text-xl font-bold text-indigo-600">{{
+                                formatPrice(order.total_amount)
+                            }}</span>
+                        </div>
+                    </template>
                 </div>
             </div>
 

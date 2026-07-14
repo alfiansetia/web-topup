@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AdminCategoryController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminOrderController;
 use App\Http\Controllers\Admin\AdminProductController;
+use App\Http\Controllers\Admin\AdminSettingsController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminVariantController;
 use Illuminate\Support\Facades\Route;
@@ -48,4 +49,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('orders/{order}/complete', [AdminOrderController::class, 'complete'])->name('orders.complete');
     Route::post('orders/{order}/cancel', [AdminOrderController::class, 'cancel'])->name('orders.cancel');
     Route::put('orders/{order}/notes', [AdminOrderController::class, 'updateNotes'])->name('orders.notes');
+
+    // Settings
+    Route::get('settings', [AdminSettingsController::class, 'index'])->name('settings.index');
+    Route::post('settings/telegram/test', [AdminSettingsController::class, 'testTelegram'])->name('settings.telegram.test');
 });

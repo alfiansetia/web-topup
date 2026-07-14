@@ -7,12 +7,21 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Services\PakasirService;
+use App\Services\TelegramService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class ShopController extends Controller
 {
+    public function __construct(
+        protected PakasirService $pakasir,
+        protected TelegramService $telegram,
+    ) {}
+
     // Homepage: kategori + produk populer
     public function home()
     {
@@ -131,8 +140,10 @@ class ShopController extends Controller
             'notes' => 'nullable|string|max:1000',
         ]);
 
-        $customerName = auth()->user()->name;
-        $customerEmail = auth()->user()->email;
+        $user = Auth::user();
+
+        $customerName = $user->name;
+        $customerEmail = $user->email;
         $customerPhone = null;
 
         $variant = ProductVariant::with('product')->findOrFail($validated['variant_id']);
@@ -157,7 +168,7 @@ class ShopController extends Controller
             // Buat order
             $order = Order::create([
                 'order_number' => Order::generateOrderNumber(),
-                'user_id' => auth()->id(),
+                'user_id' => $user->id,
                 'customer_name' => $customerName,
                 'customer_email' => $customerEmail,
                 'customer_phone' => $customerPhone,
@@ -190,16 +201,37 @@ class ShopController extends Controller
             // Recalculate stock
             $variant->recalculateStock();
 
+            // Create QRIS payment via Pakasir (inside transaction!)
+            $payment = $this->pakasir->createQrisTransaction($order->order_number, (int) $totalAmount);
+
+            if (!$payment) {
+                throw new \Exception('Gagal membuat pembayaran QRIS. Toko belum ready menerima pembayarn.');
+            }
+
+            $order->update([
+                'payment_ref'               => $payment['payment_number'] ?? null,
+                'payment_method'             => $payment['payment_method'] ?? 'qris',
+                'payment_url'                => $this->pakasir->getPaymentUrl($order->order_number, (int) $totalAmount),
+                'payment_channel'            => 'qris',
+                'payment_fee'                => $payment['fee'] ?? 0,
+                'payment_gateway_status'     => 'pending',
+                'payment_gateway_response'   => $payment,
+            ]);
+
             DB::commit();
 
-            // TODO: Integrate payment gateway (Pakasir)
-            // For now, redirect to order detail
+            // Telegram notification (non-blocking, after commit)
+            $this->telegram->notifyNewOrder($order);
+
             return redirect()->route('shop.order', $order->order_number)
                 ->with('success', 'Pesanan berhasil dibuat! Silakan lakukan pembayaran.');
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Checkout failed', [
+                'error' => $e->getMessage(),
+            ]);
             return back()->withErrors([
-                'checkout' => 'Terjadi kesalahan saat memproses pesanan. Silakan coba lagi.',
+                'checkout' => $e->getMessage(),
             ]);
         }
     }
