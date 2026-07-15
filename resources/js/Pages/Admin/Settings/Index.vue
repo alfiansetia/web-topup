@@ -1,7 +1,7 @@
 <script setup>
 import AdminLayout from "@/Layouts/AdminLayout.vue";
-import { Head, useForm } from "@inertiajs/vue3";
-import { ref } from "vue";
+import { Head, useForm, router } from "@inertiajs/vue3";
+import { ref, computed } from "vue";
 
 const props = defineProps({
     telegram: Object,
@@ -10,6 +10,8 @@ const props = defineProps({
 
 const testForm = useForm({});
 const testing = ref(false);
+const settingWebhook = ref(false);
+const deletingWebhook = ref(false);
 
 const sendTest = () => {
     testing.value = true;
@@ -18,6 +20,52 @@ const sendTest = () => {
             testing.value = false;
         },
     });
+};
+
+const webhookInfo = computed(() => props.telegram.webhook_info);
+const webhookActive = computed(
+    () =>
+        webhookInfo.value &&
+        webhookInfo.value.url &&
+        !webhookInfo.value.last_error_date,
+);
+const webhookHasError = computed(
+    () => webhookInfo.value && webhookInfo.value.last_error_date,
+);
+
+const setWebhook = () => {
+    settingWebhook.value = true;
+    router.post(
+        route("admin.settings.telegram.set-webhook"),
+        {},
+        {
+            onFinish: () => {
+                settingWebhook.value = false;
+            },
+        },
+    );
+};
+
+const deleteWebhook = () => {
+    deletingWebhook.value = true;
+    router.post(
+        route("admin.settings.telegram.delete-webhook"),
+        {},
+        {
+            onFinish: () => {
+                deletingWebhook.value = false;
+            },
+        },
+    );
+};
+
+const refreshWebhookInfo = () => {
+    router.get(route("admin.settings.index"), {}, { preserveScroll: true });
+};
+
+const formatDate = (ts) => {
+    if (!ts) return "-";
+    return new Date(ts * 1000).toLocaleString("id-ID");
 };
 </script>
 
@@ -234,6 +282,248 @@ const sendTest = () => {
                             >TELEGRAM_CHAT_IDS</code
                         >
                         (pisahkan dengan koma untuk beberapa chat).
+                    </p>
+                </div>
+            </div>
+
+            <!-- Telegram Webhook Section -->
+            <div
+                class="mt-6 bg-white rounded-2xl border border-gray-100 overflow-hidden"
+            >
+                <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center"
+                        >
+                            <svg
+                                class="w-5 h-5 text-emerald-600"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke-width="2"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m9.386-3.04a4.5 4.5 0 0 0-1.242-7.244l-4.5-4.5a4.5 4.5 0 0 0-6.364 6.364L5.25 9.19"
+                                />
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-bold text-gray-900">
+                                Telegram Webhook
+                            </h2>
+                            <p class="text-sm text-gray-500">
+                                Konfigurasi webhook untuk bot interaktif
+                            </p>
+                        </div>
+                        <span
+                            class="ml-auto px-3 py-1 text-xs font-semibold rounded-full"
+                            :class="
+                                webhookActive
+                                    ? 'bg-green-100 text-green-700'
+                                    : webhookHasError
+                                      ? 'bg-red-100 text-red-700'
+                                      : 'bg-gray-100 text-gray-500'
+                            "
+                        >
+                            {{
+                                webhookActive
+                                    ? "Aktif"
+                                    : webhookHasError
+                                      ? "Error"
+                                      : "Belum Diset"
+                            }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="p-6 space-y-4">
+                    <!-- Webhook URL -->
+                    <div class="text-sm space-y-2">
+                        <div
+                            class="flex items-center justify-between py-2 border-b border-gray-100"
+                        >
+                            <span class="text-gray-500">Webhook URL</span>
+                            <code
+                                class="text-xs bg-gray-100 px-2 py-1 rounded select-all"
+                                >{{ telegram.webhook_url }}</code
+                            >
+                        </div>
+                        <div
+                            v-if="webhookInfo"
+                            class="flex items-center justify-between py-2 border-b border-gray-100"
+                        >
+                            <span class="text-gray-500">URL Terdaftar</span>
+                            <code
+                                class="text-xs px-2 py-1 rounded select-all max-w-[260px] truncate"
+                                :class="
+                                    webhookInfo.url
+                                        ? 'bg-green-50 text-green-700'
+                                        : 'bg-gray-100 text-gray-400'
+                                "
+                            >
+                                {{ webhookInfo.url || "Tidak ada" }}
+                            </code>
+                        </div>
+                        <div
+                            v-if="
+                                webhookInfo && webhookInfo.pending_update_count
+                            "
+                            class="flex items-center justify-between py-2 border-b border-gray-100"
+                        >
+                            <span class="text-gray-500">Pending Updates</span>
+                            <span
+                                class="font-medium"
+                                :class="
+                                    webhookInfo.pending_update_count > 0
+                                        ? 'text-yellow-600'
+                                        : 'text-green-600'
+                                "
+                            >
+                                {{ webhookInfo.pending_update_count }}
+                            </span>
+                        </div>
+                        <div
+                            v-if="webhookHasError"
+                            class="flex items-center justify-between py-2 border-b border-gray-100"
+                        >
+                            <span class="text-gray-500">Last Error</span>
+                            <span
+                                class="text-xs text-red-600 max-w-[260px] truncate"
+                            >
+                                {{ webhookInfo.last_error_message }}
+                            </span>
+                        </div>
+                        <div
+                            v-if="webhookHasError"
+                            class="flex items-center justify-between py-2 border-b border-gray-100"
+                        >
+                            <span class="text-gray-500">Error Date</span>
+                            <span class="text-xs text-red-500">
+                                {{ formatDate(webhookInfo.last_error_date) }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex flex-wrap gap-3 pt-2">
+                        <button
+                            @click="setWebhook"
+                            :disabled="!telegram.configured || settingWebhook"
+                            class="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-xl hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                        >
+                            <svg
+                                v-if="settingWebhook"
+                                class="w-4 h-4 animate-spin"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                            >
+                                <circle
+                                    class="opacity-25"
+                                    cx="12"
+                                    cy="12"
+                                    r="10"
+                                    stroke="currentColor"
+                                    stroke-width="4"
+                                />
+                                <path
+                                    class="opacity-75"
+                                    fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                                />
+                            </svg>
+                            <svg
+                                v-else
+                                class="w-4 h-4"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke-width="2"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d="M12 4.5v15m7.5-7.5h-15"
+                                />
+                            </svg>
+                            {{
+                                settingWebhook ? "Menyeting..." : "Set Webhook"
+                            }}
+                        </button>
+
+                        <button
+                            @click="refreshWebhookInfo"
+                            class="inline-flex items-center gap-2 px-4 py-2.5 bg-white text-gray-700 text-sm font-semibold rounded-xl ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-all duration-200"
+                        >
+                            <svg
+                                class="w-4 h-4"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke-width="2"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182"
+                                />
+                            </svg>
+                            Refresh
+                        </button>
+
+                        <button
+                            @click="deleteWebhook"
+                            :disabled="!telegram.configured || deletingWebhook"
+                            class="inline-flex items-center gap-2 px-4 py-2.5 bg-red-50 text-red-600 text-sm font-semibold rounded-xl hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                        >
+                            <svg
+                                v-if="deletingWebhook"
+                                class="w-4 h-4 animate-spin"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                            >
+                                <circle
+                                    class="opacity-25"
+                                    cx="12"
+                                    cy="12"
+                                    r="10"
+                                    stroke="currentColor"
+                                    stroke-width="4"
+                                />
+                                <path
+                                    class="opacity-75"
+                                    fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                                />
+                            </svg>
+                            <svg
+                                v-else
+                                class="w-4 h-4"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke-width="2"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+                                />
+                            </svg>
+                            {{
+                                deletingWebhook
+                                    ? "Menghapus..."
+                                    : "Hapus Webhook"
+                            }}
+                        </button>
+                    </div>
+
+                    <!-- Hint -->
+                    <p class="text-xs text-gray-400 pt-1">
+                        <b>Set Webhook</b> akan mendaftarkan URL bot ke
+                        Telegram. Pastikan URL bisa diakses dari luar (public).
+                        Gunakan <b>Refresh</b> untuk cek status terbaru.
                     </p>
                 </div>
             </div>

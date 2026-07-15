@@ -13,6 +13,7 @@ use App\Models\ProductItem;
 use App\Models\ProductVariant;
 use App\Models\User;
 use App\Services\PakasirService;
+use App\Services\TelegramBotService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -293,6 +294,9 @@ class AdminOrderController extends Controller
             // Email notification (queued)
             Mail::to($order->customer_email)->queue(new OrderCompleted($order));
 
+            // Telegram notification ke user
+            app(TelegramBotService::class)->notifyOrderStatus($order);
+
             return back()->with('success', 'Order berhasil diselesaikan & akun dikirim.');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -314,7 +318,8 @@ class AdminOrderController extends Controller
 
         // Email notification (queued)
         Mail::to($order->customer_email)->queue(new OrderPaymentSuccess($order));
-
+        // Telegram notification ke user
+        app(TelegramBotService::class)->notifyOrderStatus($order);
         return back()->with('success', 'Pembayaran berhasil diverifikasi.');
     }
 
@@ -398,6 +403,9 @@ class AdminOrderController extends Controller
 
             // Kirim email
             Mail::to($order->customer_email)->queue(new OrderCancelled($order));
+
+            // Telegram notification ke user
+            app(TelegramBotService::class)->notifyOrderStatus($order);
 
             return back()->with('success', 'Order berhasil dibatalkan.');
         } catch (\Exception $e) {

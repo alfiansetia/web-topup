@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Services\TelegramService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class AdminSettingsController extends Controller
@@ -22,6 +24,8 @@ class AdminSettingsController extends Controller
                 'notify_new_order' => config('telegram.notify_new_order', true),
                 'notify_paid'      => config('telegram.notify_paid', true),
                 'chat_ids'         => config('telegram.chat_ids', []),
+                'webhook_url'      => url('/telegram/webhook'),
+                'webhook_info'     => $this->getWebhookInfo(),
             ],
             'pakasir' => [
                 'slug'          => config('payment.pakasir_slug'),
@@ -52,5 +56,95 @@ class AdminSettingsController extends Controller
         }
 
         return back()->with('error', 'Gagal mengirim pesan test. Cek log Laravel untuk detail.');
+    }
+
+    public function getTelegramWebhookInfo()
+    {
+        $info = $this->getWebhookInfo();
+
+        if ($info === null) {
+            return back()->with('error', 'Gagal mengambil info webhook. Cek TELEGRAM_BOT_TOKEN.');
+        }
+
+        return back()->with('webhook_info', $info);
+    }
+
+    public function setTelegramWebhook()
+    {
+        $botToken = config('telegram.bot_token');
+        $webhookUrl = url('/telegram/webhook');
+        $secret = config('telegram.webhook_secret');
+
+        if (!$botToken) {
+            return back()->with('error', 'TELEGRAM_BOT_TOKEN belum dikonfigurasi.');
+        }
+
+        $payload = ['url' => $webhookUrl];
+        if ($secret) {
+            $payload['secret_token'] = $secret;
+        }
+
+        try {
+            $response = Http::timeout(15)->post(
+                "https://api.telegram.org/bot{$botToken}/setWebhook",
+                $payload
+            );
+
+            if ($response->successful() && ($response->json('ok') ?? false)) {
+                return back()->with('success', "Webhook berhasil diset ke: {$webhookUrl}");
+            }
+
+            return back()->with('error', 'Gagal set webhook: ' . ($response->json('description') ?? 'Unknown error'));
+        } catch (\Exception $e) {
+            Log::error('Set webhook failed', ['error' => $e->getMessage()]);
+            return back()->with('error', 'Gagal set webhook: ' . $e->getMessage());
+        }
+    }
+
+    public function deleteTelegramWebhook()
+    {
+        $botToken = config('telegram.bot_token');
+
+        if (!$botToken) {
+            return back()->with('error', 'TELEGRAM_BOT_TOKEN belum dikonfigurasi.');
+        }
+
+        try {
+            $response = Http::timeout(15)->post(
+                "https://api.telegram.org/bot{$botToken}/deleteWebhook"
+            );
+
+            if ($response->successful() && ($response->json('ok') ?? false)) {
+                return back()->with('success', 'Webhook berhasil dihapus.');
+            }
+
+            return back()->with('error', 'Gagal menghapus webhook.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal menghapus webhook: ' . $e->getMessage());
+        }
+    }
+
+    private function getWebhookInfo(): ?array
+    {
+        $botToken = config('telegram.bot_token');
+
+        if (!$botToken) {
+            return null;
+        }
+
+        try {
+            $response = Http::timeout(15)->get(
+                "https://api.telegram.org/bot{$botToken}/getWebhookInfo"
+            );
+
+            if ($response->successful() && ($response->json('ok') ?? false)) {
+                return $response->json('result');
+            }
+
+            return null;
+        } catch (\Exception $e) {
+            Log::error('getWebhookInfo failed', ['error' => $e->getMessage()]);
+            return null;
+        }
     }
 }

@@ -21,6 +21,8 @@ return new class extends Migration
             $table->string('password')->nullable();
             $table->string('role')->default('user');
             $table->string('telegram_id')->nullable();
+            $table->string('telegram_link_code')->nullable();
+            $table->timestamp('telegram_link_expires_at')->nullable();
             $table->boolean('is_blocked')->default(false);
             $table->rememberToken();
             $table->timestamps();

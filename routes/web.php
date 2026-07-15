@@ -4,9 +4,14 @@ use App\Http\Controllers\Auth\SetPasswordController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ShopController;
+use App\Http\Controllers\TelegramBotController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+
+// ===== TELEGRAM BOT WEBHOOK =====
+Route::post('/telegram/webhook', [TelegramBotController::class, 'webhook'])
+    ->name('telegram.webhook');
 
 // ===== SHOP ROUTES =====
 Route::get('/', [ShopController::class, 'home'])->name('shop.home');

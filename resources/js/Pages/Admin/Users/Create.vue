@@ -5,26 +5,27 @@ import {
     ArrowLeftIcon,
     UserIcon,
     ShieldCheckIcon,
-    NoSymbolIcon,
-    CheckCircleIcon,
+    KeyIcon,
 } from "@heroicons/vue/24/outline";
-
-const props = defineProps({ user: Object });
+import { ref } from "vue";
 
 const form = useForm({
-    name: props.user.name,
-    email: props.user.email,
-    role: props.user.role,
-    is_blocked: props.user.is_blocked,
+    name: "",
+    email: "",
+    password: "",
+    password_confirmation: "",
+    role: "user",
 });
 
+const showPassword = ref(false);
+
 const submit = () => {
-    form.put(route("admin.users.update", props.user.id));
+    form.post(route("admin.users.store"));
 };
 </script>
 
 <template>
-    <Head :title="`Edit ${user.name}`" />
+    <Head title="Tambah Pengguna" />
     <AdminLayout>
         <div class="mb-6">
             <Link
@@ -34,7 +35,12 @@ const submit = () => {
                 <ArrowLeftIcon class="w-4 h-4" />
                 Kembali ke Pengguna
             </Link>
-            <h1 class="text-2xl font-bold text-gray-900 mt-2">Edit Pengguna</h1>
+            <h1 class="text-2xl font-bold text-gray-900 mt-2">
+                Tambah Pengguna
+            </h1>
+            <p class="text-sm text-gray-500 mt-1">
+                Buat akun pengguna baru secara manual
+            </p>
         </div>
 
         <div class="max-w-xl">
@@ -46,12 +52,14 @@ const submit = () => {
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">
                         <UserIcon class="w-4 h-4 inline text-gray-400" />
-                        Nama
+                        Nama <span class="text-red-500">*</span>
                     </label>
                     <input
                         v-model="form.name"
                         type="text"
+                        placeholder="Masukkan nama lengkap"
                         class="w-full rounded-lg ring-1 ring-inset ring-gray-300 py-2.5 px-3.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                        autofocus
                     />
                     <p
                         v-if="form.errors.name"
@@ -64,11 +72,12 @@ const submit = () => {
                 <!-- Email -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">
-                        Email
+                        Email <span class="text-red-500">*</span>
                     </label>
                     <input
                         v-model="form.email"
                         type="email"
+                        placeholder="contoh@email.com"
                         class="w-full rounded-lg ring-1 ring-inset ring-gray-300 py-2.5 px-3.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                     />
                     <p
@@ -77,6 +86,49 @@ const submit = () => {
                     >
                         {{ form.errors.email }}
                     </p>
+                </div>
+
+                <!-- Password -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        <KeyIcon class="w-4 h-4 inline text-gray-400" />
+                        Password <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <input
+                            v-model="form.password"
+                            :type="showPassword ? 'text' : 'password'"
+                            placeholder="Minimal 8 karakter"
+                            class="w-full rounded-lg ring-1 ring-inset ring-gray-300 py-2.5 px-3.5 pr-20 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                        />
+                        <button
+                            type="button"
+                            @click="showPassword = !showPassword"
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                        >
+                            {{ showPassword ? "Sembunyikan" : "Tampilkan" }}
+                        </button>
+                    </div>
+                    <p
+                        v-if="form.errors.password"
+                        class="text-red-500 text-xs mt-1"
+                    >
+                        {{ form.errors.password }}
+                    </p>
+                </div>
+
+                <!-- Password Confirmation -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Konfirmasi Password
+                        <span class="text-red-500">*</span>
+                    </label>
+                    <input
+                        v-model="form.password_confirmation"
+                        :type="showPassword ? 'text' : 'password'"
+                        placeholder="Ulangi password"
+                        class="w-full rounded-lg ring-1 ring-inset ring-gray-300 py-2.5 px-3.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                    />
                 </div>
 
                 <!-- Role -->
@@ -100,39 +152,13 @@ const submit = () => {
                     </p>
                 </div>
 
-                <!-- Status -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Status Akun
-                    </label>
-                    <div class="flex gap-3">
-                        <button
-                            type="button"
-                            @click="form.is_blocked = false"
-                            :class="[
-                                'flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium transition-all',
-                                !form.is_blocked
-                                    ? 'bg-green-50 border-green-300 text-green-700 ring-2 ring-green-200'
-                                    : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300',
-                            ]"
-                        >
-                            <CheckCircleIcon class="w-4 h-4" />
-                            Aktif
-                        </button>
-                        <button
-                            type="button"
-                            @click="form.is_blocked = true"
-                            :class="[
-                                'flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium transition-all',
-                                form.is_blocked
-                                    ? 'bg-red-50 border-red-300 text-red-700 ring-2 ring-red-200'
-                                    : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300',
-                            ]"
-                        >
-                            <NoSymbolIcon class="w-4 h-4" />
-                            Diblokir
-                        </button>
-                    </div>
+                <!-- Info -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                    <p class="text-xs text-blue-700">
+                        User yang dibuat secara manual akan langsung aktif
+                        (email terverifikasi) dan bisa login dengan email &amp;
+                        password yang diatur di sini.
+                    </p>
                 </div>
 
                 <!-- Submit -->
@@ -142,11 +168,7 @@ const submit = () => {
                         :disabled="form.processing"
                         class="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl disabled:opacity-50 transition-all"
                     >
-                        {{
-                            form.processing
-                                ? "Menyimpan..."
-                                : "Simpan Perubahan"
-                        }}
+                        {{ form.processing ? "Menyimpan..." : "Buat Pengguna" }}
                     </button>
                     <Link
                         :href="route('admin.users.index')"

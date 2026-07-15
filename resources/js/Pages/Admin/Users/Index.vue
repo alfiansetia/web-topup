@@ -9,6 +9,7 @@ import {
     CheckCircleIcon,
     TrashIcon,
     PencilSquareIcon,
+    PlusIcon,
 } from "@heroicons/vue/24/outline";
 import Swal from "sweetalert2";
 
@@ -88,9 +89,18 @@ const roleColor = (role) =>
     <AdminLayout>
         <div class="flex items-center justify-between mb-6">
             <h1 class="text-2xl font-bold text-gray-900">Pengguna</h1>
-            <span class="text-sm text-gray-500"
-                >{{ users.total }} pengguna</span
-            >
+            <div class="flex items-center gap-3">
+                <span class="text-sm text-gray-500"
+                    >{{ users.total }} pengguna</span
+                >
+                <Link
+                    :href="route('admin.users.create')"
+                    class="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-all duration-200"
+                >
+                    <PlusIcon class="w-4 h-4" />
+                    Tambah User
+                </Link>
+            </div>
         </div>
 
         <!-- Filters -->

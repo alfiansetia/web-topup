@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Services\PakasirService;
+use App\Services\TelegramBotService;
 use App\Services\TelegramService;
 use App\Mail\OrderPaymentSuccess;
 use Illuminate\Http\Request;
@@ -65,6 +66,9 @@ class PakasirWebhookController extends Controller
 
             // Email notification (queued)
             Mail::to($order->customer_email)->queue(new OrderPaymentSuccess($order));
+
+            // Telegram notification ke user
+            app(TelegramBotService::class)->notifyOrderStatus($order);
 
             Log::info('Order paid via Pakasir', ['order_number' => $order->order_number]);
         }

@@ -47,6 +47,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Users
     Route::get('users', [AdminUserController::class, 'index'])->name('users.index');
+    Route::get('users/create', [AdminUserController::class, 'create'])->name('users.create');
+    Route::post('users', [AdminUserController::class, 'store'])->name('users.store');
     Route::get('users/{user}/edit', [AdminUserController::class, 'edit'])->name('users.edit');
     Route::put('users/{user}', [AdminUserController::class, 'update'])->name('users.update');
     Route::put('users/{user}/toggle-block', [AdminUserController::class, 'toggleBlock'])->name('users.toggle-block');
@@ -61,4 +63,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Settings
     Route::get('settings', [AdminSettingsController::class, 'index'])->name('settings.index');
     Route::post('settings/telegram/test', [AdminSettingsController::class, 'testTelegram'])->name('settings.telegram.test');
+    Route::get('settings/telegram/webhook-info', [AdminSettingsController::class, 'getTelegramWebhookInfo'])->name('settings.telegram.webhook-info');
+    Route::post('settings/telegram/set-webhook', [AdminSettingsController::class, 'setTelegramWebhook'])->name('settings.telegram.set-webhook');
+    Route::post('settings/telegram/delete-webhook', [AdminSettingsController::class, 'deleteTelegramWebhook'])->name('settings.telegram.delete-webhook');
 });
