@@ -8,8 +8,10 @@ use App\Mail\OrderCompleted;
 use App\Mail\OrderPaymentSuccess;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Product;
 use App\Models\ProductItem;
 use App\Models\ProductVariant;
+use App\Models\User;
 use App\Services\PakasirService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -69,6 +71,126 @@ class AdminOrderController extends Controller
             'order' => $order,
             'availableStock' => $availableStock,
         ]);
+    }
+
+    // Cari user berdasarkan email (auto-fill)
+    public function lookupUser(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+        ]);
+
+        $user = User::where('email', $request->email)
+            ->first(['id', 'name', 'email']);
+
+        if ($user) {
+            return response()->json([
+                'found' => true,
+                'user' => $user,
+            ]);
+        }
+
+        return response()->json(['found' => false]);
+    }
+
+    // Form buat pesanan manual
+    public function create()
+    {
+        $products = Product::where('is_active', true)
+            ->with(['variants' => function ($q) {
+                $q->where('is_active', true)->orderBy('sort_order');
+            }])
+            ->orderBy('sort_order')
+            ->get();
+
+        return Inertia::render('Admin/Orders/Create', [
+            'products' => $products,
+        ]);
+    }
+
+    // Simpan pesanan manual
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'customer_name' => 'required|string|max:255',
+            'customer_email' => 'required|email|max:255',
+            'customer_phone' => 'nullable|string|max:20',
+            'items' => 'required|array|min:1',
+            'items.*.variant_id' => 'required|exists:product_variants,id',
+            'items.*.quantity' => 'required|integer|min:1|max:10',
+            'notes' => 'nullable|string|max:1000',
+            'send_email' => 'boolean',
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            // Generate order number
+            $orderNumber = 'ORD-' . date('Ymd') . '-' . str_pad(mt_rand(1, 9999), 4, '0', STR_PAD_LEFT);
+
+            // Cek apakah email terdaftar sebagai user
+            $registeredUser = User::where('email', $validated['customer_email'])->first();
+
+            // Hitung total
+            $totalAmount = 0;
+            $orderItemsData = [];
+
+            foreach ($validated['items'] as $item) {
+                $variant = ProductVariant::with('product')->findOrFail($item['variant_id']);
+                $unitPrice = $variant->effective_price;
+                $subtotal = $unitPrice * $item['quantity'];
+                $totalAmount += $subtotal;
+
+                $orderItemsData[] = [
+                    'product_id' => $variant->product_id,
+                    'variant_id' => $variant->id,
+                    'product_name' => $variant->product->name,
+                    'variant_name' => $variant->name,
+                    'price' => $unitPrice,
+                    'quantity' => $item['quantity'],
+                    'subtotal' => $subtotal,
+                ];
+            }
+
+            // Create order
+            $order = Order::create([
+                'user_id' => $registeredUser?->id,
+                'order_number' => $orderNumber,
+                'customer_name' => $validated['customer_name'],
+                'customer_email' => $validated['customer_email'],
+                'customer_phone' => $validated['customer_phone'] ?? null,
+                'total_amount' => $totalAmount,
+                'status' => 'paid',
+                'payment_method' => 'manual',
+                'paid_at' => now(),
+                'notes' => $validated['notes'] ?? null,
+            ]);
+
+            // Create order items
+            foreach ($orderItemsData as $data) {
+                $order->items()->create($data);
+            }
+
+            DB::commit();
+
+            // Kirim email notifikasi jika dipilih
+            if (!empty($validated['send_email'])) {
+                $order->load('items');
+                Mail::to($order->customer_email)->queue(new OrderPaymentSuccess($order));
+            }
+
+            $msg = 'Pesanan manual berhasil dibuat.';
+            if (!empty($validated['send_email'])) {
+                $msg .= ' Email notifikasi telah dikirim.';
+            }
+
+            return redirect()->route('admin.orders.show', $order->id)
+                ->with('success', $msg);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Manual order creation failed', ['error' => $e->getMessage()]);
+            return back()->with('error', 'Gagal membuat pesanan: ' . $e->getMessage());
+        }
     }
 
     // Simpan assign akun ke order items

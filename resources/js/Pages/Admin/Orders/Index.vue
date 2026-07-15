@@ -3,7 +3,7 @@ import AdminLayout from "@/Layouts/AdminLayout.vue";
 import Pagination from "@/Components/Pagination.vue";
 import { Head, Link, router } from "@inertiajs/vue3";
 import { ref } from "vue";
-import { MagnifyingGlassIcon } from "@heroicons/vue/24/outline";
+import { MagnifyingGlassIcon, PlusIcon } from "@heroicons/vue/24/outline";
 
 defineProps({
     orders: Object,
@@ -51,6 +51,13 @@ const statuses = [
     <AdminLayout>
         <div class="flex items-center justify-between mb-6">
             <h1 class="text-2xl font-bold text-gray-900">Pesanan</h1>
+            <Link
+                :href="route('admin.orders.create')"
+                class="inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition"
+            >
+                <PlusIcon class="w-4 h-4" />
+                Buat Pesanan
+            </Link>
         </div>
 
         <!-- Filters -->

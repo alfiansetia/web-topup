@@ -40,6 +40,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Orders
     Route::get('orders', [AdminOrderController::class, 'index'])->name('orders.index');
+    Route::get('orders/create', [AdminOrderController::class, 'create'])->name('orders.create');
+    Route::post('orders/lookup-user', [AdminOrderController::class, 'lookupUser'])->name('orders.lookup-user');
+    Route::post('orders', [AdminOrderController::class, 'store'])->name('orders.store');
     Route::get('orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
 
     // Users
