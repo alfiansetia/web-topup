@@ -1,7 +1,7 @@
 <script setup>
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import { Head, Link, router, useForm } from "@inertiajs/vue3";
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import {
     ClockIcon,
     CreditCardIcon,
@@ -199,8 +199,8 @@ const statusSteps = [
     { key: "completed", label: "Selesai", icon: CheckCircleIcon },
 ];
 
-const currentStepIndex = statusSteps.findIndex(
-    (s) => s.key === props.order.status,
+const currentStepIndex = computed(() =>
+    statusSteps.findIndex((s) => s.key === props.order.status),
 );
 </script>
 
