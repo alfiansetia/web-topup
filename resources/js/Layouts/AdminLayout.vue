@@ -67,11 +67,11 @@ const isActive = (routeName) => {
             <div
                 class="flex items-center gap-3 px-6 py-5 border-b border-gray-800"
             >
-                <div
-                    class="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
-                >
-                    T
-                </div>
+                <img
+                    :src="'/images/android-chrome-512x512.png'"
+                    alt="Logo"
+                    class="w-8 h-8 rounded-lg object-contain flex-shrink-0"
+                />
                 <span
                     v-if="!sidebarCollapsed"
                     class="text-lg font-bold tracking-tight"
