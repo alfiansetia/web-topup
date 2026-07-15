@@ -62,6 +62,11 @@ RUN cp .env.example .env 2>/dev/null || true
 # Generate app key if not set
 RUN php artisan key:generate 2>/dev/null || true
 
+# Copy entrypoint
+COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
 EXPOSE 9000
 
+ENTRYPOINT ["entrypoint.sh"]
 CMD ["php-fpm"]
