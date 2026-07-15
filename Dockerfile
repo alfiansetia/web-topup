@@ -19,27 +19,29 @@ FROM php:8.3-fpm-alpine
 
 # Install system dependencies
 RUN apk add --no-cache \
+    bash \
     libpng-dev \
     libjpeg-turbo-dev \
     freetype-dev \
     libzip-dev \
     icu-dev \
+    icu-data-full \
     oniguruma-dev \
+    libxml2-dev \
+    mariadb-dev \
     autoconf \
     g++ \
     make
 
-# Install PHP extensions (GD)
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg
-RUN docker-php-ext-install gd
-
-# Install PHP extensions (lainnya)
-RUN docker-php-ext-install -j$(nproc) \
+# Install PHP extensions
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) \
     pdo_mysql \
     mbstring \
     xml \
     bcmath \
     zip \
+    gd \
     intl \
     opcache \
     pcntl
