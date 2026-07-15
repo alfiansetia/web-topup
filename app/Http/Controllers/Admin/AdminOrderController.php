@@ -200,7 +200,7 @@ class AdminOrderController extends Controller
     public function resendEmail(Order $order)
     {
         try {
-            $order->load('items');
+            $order->load('items.assignedItems');
 
             if ($order->status === 'completed') {
                 Mail::to($order->customer_email)->queue(new OrderCompleted($order));

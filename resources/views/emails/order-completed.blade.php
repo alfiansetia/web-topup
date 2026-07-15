@@ -34,7 +34,7 @@
             <div class="info-row">
                 <span class="info-label">{{ $item->product_name }}
                     ({{ $item->variant_name }})
-                    {{ $item->quantity > 1 ? ' &times;' . $item->quantity : '' }}</span>
+                    {!! $item->quantity > 1 ? ' &times;' . $item->quantity : '' !!}</span>
                 <span class="info-value">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</span>
             </div>
         @endforeach
@@ -44,6 +44,35 @@
             <span class="total-value">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</span>
         </div>
     </div>
+
+    @php
+        $hasAccounts = $order->items->contains(function ($item) {
+            return $item->assignedItems && $item->assignedItems->count() > 0;
+        });
+    @endphp
+
+    @if ($hasAccounts)
+        <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 20px; margin-top: 20px;">
+            <p style="font-size: 15px; font-weight: 700; color: #1e40af; margin: 0 0 14px 0;">🔐 Akun Anda</p>
+            @foreach ($order->items as $item)
+                @if ($item->assignedItems && $item->assignedItems->count() > 0)
+                    <div style="margin-bottom: 14px;">
+                        <p style="font-size: 14px; font-weight: 600; color: #374151; margin: 0 0 8px 0;">
+                            {{ $item->product_name }} ({{ $item->variant_name }})
+                            {!! $item->quantity > 1 ? ' &times;' . $item->quantity : '' !!}
+                        </p>
+                        @foreach ($item->assignedItems as $ai)
+                            <div
+                                style="background: #ffffff; border: 1px solid #dbeafe; border-radius: 8px; padding: 12px; margin-bottom: 6px;">
+                                <pre
+                                    style="margin: 0; font-size: 13px; color: #1f2937; font-family: 'Courier New', monospace; white-space: pre-wrap; word-break: break-all;">{{ $ai->content }}</pre>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
+            @endforeach
+        </div>
+    @endif
 
     @php
         $instructions = $order->items

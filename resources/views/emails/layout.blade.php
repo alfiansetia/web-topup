@@ -88,20 +88,26 @@
         }
 
         .info-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 6px 0;
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .info-row td {
+            padding: 10px 0;
             font-size: 14px;
+            vertical-align: top;
         }
 
         .info-label {
             color: #6b7280;
+            padding-right: 20px;
         }
 
         .info-value {
             color: #111827;
             font-weight: 500;
             text-align: right;
+            white-space: nowrap;
         }
 
         .divider {
@@ -111,11 +117,15 @@
         }
 
         .total-row {
-            display: flex;
-            justify-content: space-between;
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .total-row td {
             padding: 8px 0;
             font-size: 16px;
             font-weight: 700;
+            vertical-align: top;
         }
 
         .total-label {
@@ -124,6 +134,8 @@
 
         .total-value {
             color: #4f46e5;
+            text-align: right;
+            white-space: nowrap;
         }
 
         .btn {
@@ -177,13 +189,14 @@
         }
 
         .footer-contact-row {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            margin: 6px 0;
+            margin: 8px 0;
             font-size: 13px;
             color: #9ca3af;
+        }
+
+        .footer-contact-row td {
+            padding: 0 4px;
+            vertical-align: middle;
         }
 
         .footer-bottom {
@@ -234,18 +247,25 @@
                 <hr class="footer-divider">
 
                 <div class="footer-contact">
-                    <div class="footer-contact-row">
-                        <span>📧</span>
-                        <a href="mailto:{{ config('site.cs_email') }}">{{ config('site.cs_email') }}</a>
-                    </div>
-                    <div class="footer-contact-row">
-                        <span>💬</span>
-                        <a href="https://wa.me/{{ config('site.cs_wa') }}">WhatsApp {{ config('site.cs_wa') }}</a>
-                    </div>
-                    <div class="footer-contact-row">
-                        <span>🌐</span>
-                        <a href="{{ config('app.url') }}">{{ config('app.url') }}</a>
-                    </div>
+                    <table class="footer-contact-row" align="center" cellpadding="0" cellspacing="0" border="0">
+                        <tr>
+                            <td>📧</td>
+                            <td><a href="mailto:{{ config('site.cs_email') }}">{{ config('site.cs_email') }}</a></td>
+                        </tr>
+                    </table>
+                    <table class="footer-contact-row" align="center" cellpadding="0" cellspacing="0" border="0">
+                        <tr>
+                            <td>💬</td>
+                            <td><a href="https://wa.me/{{ config('site.cs_wa') }}">WhatsApp
+                                    {{ config('site.cs_wa') }}</a></td>
+                        </tr>
+                    </table>
+                    <table class="footer-contact-row" align="center" cellpadding="0" cellspacing="0" border="0">
+                        <tr>
+                            <td>🌐</td>
+                            <td><a href="{{ config('app.url') }}">{{ config('app.url') }}</a></td>
+                        </tr>
+                    </table>
                 </div>
 
                 <hr class="footer-divider">

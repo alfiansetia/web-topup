@@ -30,7 +30,7 @@ class OrderCompleted extends Mailable implements ShouldQueue
         return new Content(
             view: 'emails.order-completed',
             with: [
-                'order' => $this->order->load('items'),
+                'order' => $this->order->load('items.assignedItems'),
             ],
         );
     }

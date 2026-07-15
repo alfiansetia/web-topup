@@ -37,7 +37,7 @@
             <div class="info-row">
                 <span class="info-label">{{ $item->product_name }}
                     ({{ $item->variant_name }})
-                    {{ $item->quantity > 1 ? ' &times;' . $item->quantity : '' }}</span>
+                    {!! $item->quantity > 1 ? ' &times;' . $item->quantity : '' !!}</span>
                 <span class="info-value">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</span>
             </div>
         @endforeach
