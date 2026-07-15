@@ -269,6 +269,7 @@ class AdminOrderController extends Controller
 
             $order->update([
                 'status' => 'cancelled',
+                'canceled_at' => now(),
             ]);
 
             DB::commit();

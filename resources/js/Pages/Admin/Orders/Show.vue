@@ -270,6 +270,58 @@ const currentStepIndex = computed(() =>
             </div>
         </div>
 
+        <!-- Cancelled Timeline -->
+        <div
+            v-if="order.status === 'cancelled'"
+            class="bg-white rounded-xl shadow-sm border p-5 mb-6"
+        >
+            <div class="flex items-start gap-4">
+                <div class="flex flex-col items-center">
+                    <div
+                        class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center flex-shrink-0"
+                    >
+                        <ClockIcon class="w-5 h-5 text-white" />
+                    </div>
+                    <div class="w-0.5 h-8 bg-red-200"></div>
+                </div>
+                <div class="pb-2">
+                    <p class="text-sm font-semibold text-gray-900">
+                        Pesanan Dibuat
+                    </p>
+                    <p class="text-xs text-gray-500">
+                        {{ new Date(order.created_at).toLocaleString("id-ID") }}
+                    </p>
+                </div>
+            </div>
+            <div class="flex items-start gap-4">
+                <div class="flex flex-col items-center">
+                    <div
+                        class="w-10 h-10 rounded-full bg-red-500 flex items-center justify-center flex-shrink-0"
+                    >
+                        <XCircleIcon class="w-5 h-5 text-white" />
+                    </div>
+                </div>
+                <div>
+                    <p class="text-sm font-semibold text-red-600">Dibatalkan</p>
+                    <p class="text-xs text-gray-500">
+                        {{
+                            order.payment_gateway_status === "expired"
+                                ? "Kedaluwarsa — tidak dibayar dalam 1 jam"
+                                : "Dibatalkan oleh admin"
+                        }}
+                    </p>
+                    <p
+                        v-if="order.canceled_at"
+                        class="text-xs text-gray-400 mt-0.5"
+                    >
+                        {{
+                            new Date(order.canceled_at).toLocaleString("id-ID")
+                        }}
+                    </p>
+                </div>
+            </div>
+        </div>
+
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Left: Order Details -->
             <div class="lg:col-span-2 space-y-6">

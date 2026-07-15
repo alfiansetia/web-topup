@@ -32,6 +32,12 @@
             <span
                 class="info-value">{{ $order->payment_gateway_status === 'expired' ? 'Kedaluwarsa (lebih dari 1 jam)' : 'Dibatalkan oleh admin' }}</span>
         </div>
+        @if ($order->canceled_at)
+            <div class="info-row">
+                <span class="info-label">Waktu Batal</span>
+                <span class="info-value">{{ $order->canceled_at->format('d M Y, H:i') }}</span>
+            </div>
+        @endif
         <hr class="divider">
         @foreach ($order->items as $item)
             <div class="info-row">

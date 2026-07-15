@@ -45,6 +45,7 @@ return new class extends Migration
             $table->text('notes')->nullable();              // Catatan admin
             $table->timestamp('paid_at')->nullable();       // Waktu pembayaran confirmed
             $table->timestamp('completed_at')->nullable();  // Waktu selesai
+            $table->timestamp('canceled_at')->nullable();  // Waktu Dibatalkan
             $table->timestamps();
 
             $table->index('status');

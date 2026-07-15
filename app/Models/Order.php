@@ -28,6 +28,7 @@ class Order extends Model
         'notes',
         'paid_at',
         'completed_at',
+        'canceled_at',
     ];
 
     protected $casts = [
@@ -35,6 +36,7 @@ class Order extends Model
         'payment_fee' => 'decimal:2',
         'paid_at' => 'datetime',
         'completed_at' => 'datetime',
+        'canceled_at' => 'datetime',
         'payment_gateway_response' => 'array',
     ];
 

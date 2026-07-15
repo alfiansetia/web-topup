@@ -69,6 +69,20 @@ class PakasirWebhookController extends Controller
             Log::info('Order paid via Pakasir', ['order_number' => $order->order_number]);
         }
 
+        // Handle cancelled / expired from payment gateway
+        if (($status === 'cancelled' || $status === 'expired' || $status === 'failed') && $order->status === 'pending') {
+            $order->update([
+                'status'                 => 'cancelled',
+                'canceled_at'            => now(),
+                'payment_gateway_status' => $status,
+            ]);
+
+            Log::info('Order cancelled via Pakasir callback', [
+                'order_number' => $order->order_number,
+                'pg_status'    => $status,
+            ]);
+        }
+
         return response()->json(['success' => true]);
     }
 }

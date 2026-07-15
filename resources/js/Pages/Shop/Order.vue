@@ -694,6 +694,12 @@ onMounted(async () => {
                                                 : "Dibatalkan oleh admin"
                                         }}
                                     </p>
+                                    <p
+                                        v-if="order.canceled_at"
+                                        class="text-xs text-gray-400 mt-0.5"
+                                    >
+                                        {{ formatDate(order.canceled_at) }}
+                                    </p>
                                 </div>
                             </div>
                         </template>
