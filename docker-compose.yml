@@ -38,6 +38,7 @@ services:
             context: .
             dockerfile: Dockerfile
         container_name: topup-queue
+        entrypoint: ["entrypoint-worker.sh"]
         command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
         env_file:
             - .env
@@ -87,6 +88,7 @@ services:
             context: .
             dockerfile: Dockerfile
         container_name: topup-scheduler
+        entrypoint: ["entrypoint-worker.sh"]
         command: >
             sh -c "
                 while true; do

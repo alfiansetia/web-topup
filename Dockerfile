@@ -62,9 +62,10 @@ RUN cp .env.example .env 2>/dev/null || true
 # Generate app key if not set
 RUN php artisan key:generate 2>/dev/null || true
 
-# Copy entrypoint
+# Copy entrypoints
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
+COPY docker/entrypoint-worker.sh /usr/local/bin/entrypoint-worker.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/entrypoint-worker.sh
 
 EXPOSE 9000
 

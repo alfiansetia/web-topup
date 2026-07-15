@@ -143,24 +143,51 @@ php artisan schedule:run
 
 Jalankan seluruh stack (Nginx, PHP-FPM, MySQL, Queue Worker, Scheduler) dengan Docker:
 
+#### 1. Copy environment
+
 ```bash
-# 1. Copy environment
 cp .env.example .env
-
-# 2. Edit .env — set DB_CONNECTION=mysql, sesuaikan APP_URL, credentials, dll.
-
-# 3. Build & start container
-docker compose up -d --build
-
-# 4. Install dependencies di dalam container
-docker compose exec app composer install --no-dev
-docker compose exec app php artisan key:generate
-
-# 5. Migrate & seed database
-docker compose exec app php artisan migrate --seed
 ```
 
-> **Note:** `storage:link` dijalankan otomatis via entrypoint saat container start.
+#### 2. Edit `.env` — sesuaikan untuk Docker
+
+```env
+APP_URL=http://localhost:8999
+
+# ── Database (penting: host = nama service di docker-compose) ──
+DB_CONNECTION=mysql
+DB_HOST=mysql
+DB_PORT=3306
+DB_DATABASE=web_topup
+DB_USERNAME=root
+DB_PASSWORD=rootsecret
+
+# ── MySQL Container ──
+MYSQL_ROOT_PASSWORD=rootsecret
+
+# ── Queue ──
+QUEUE_CONNECTION=database
+
+# ── Session ──
+SESSION_DRIVER=database
+```
+
+> **Penting:** `DB_HOST` harus `mysql` (nama service), bukan `127.0.0.1`. Container app terhubung ke MySQL via internal Docker network.
+
+#### 3. Build & start container
+
+```bash
+docker compose up -d --build
+```
+
+> Container `topup-app` otomatis: tunggu MySQL → migrate → seed (jika DB kosong) → storage:link
+
+#### 4. Cek status
+
+```bash
+docker compose ps        # Semua container harus "running"
+docker compose logs app  # Lihat log migrasi
+```
 
 Aplikasi berjalan di **http://localhost:8999**
 
@@ -180,6 +207,9 @@ docker compose exec app bash
 
 # Jalankan artisan command
 docker compose exec app php artisan tinker
+
+# Reset database (hapus semua data, migrate ulang + seed)
+docker compose exec app php artisan migrate:fresh --seed --force
 
 # Lihat log
 docker compose logs -f app
