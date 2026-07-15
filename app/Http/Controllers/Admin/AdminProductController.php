@@ -129,6 +129,11 @@ class AdminProductController extends Controller
 
     public function destroy(Product $product)
     {
+        // Cek apakah ada order_items yang mereferensikan produk ini
+        if ($product->orderItems()->exists()) {
+            return back()->with('error', 'Produk tidak bisa dihapus karena masih digunakan di pesanan.');
+        }
+
         if ($product->variants()->whereHas('items', function ($q) {
             $q->where('status', 'sold');
         })->exists()) {
@@ -139,7 +144,11 @@ class AdminProductController extends Controller
             Storage::disk('public')->delete('product/' . $product->image);
         }
 
-        $product->delete();
+        try {
+            $product->delete();
+        } catch (\Exception $e) {
+            return back()->with('error', 'Produk tidak bisa dihapus karena masih digunakan data lain (varian/item/pesanan).');
+        }
 
         return redirect()->route('admin.products.index')
             ->with('success', 'Produk berhasil dihapus.');

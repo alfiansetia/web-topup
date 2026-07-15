@@ -73,11 +73,20 @@ class AdminVariantController extends Controller
 
     public function destroy(Product $product, ProductVariant $variant)
     {
+        // Cek apakah ada order_items yang mereferensikan varian ini
+        if ($variant->orderItems()->exists()) {
+            return back()->with('error', 'Varian tidak bisa dihapus karena masih digunakan di pesanan.');
+        }
+
         if ($variant->items()->where('status', 'sold')->exists()) {
             return back()->with('error', 'Varian memiliki item yang sudah terjual.');
         }
 
-        $variant->delete();
+        try {
+            $variant->delete();
+        } catch (\Exception $e) {
+            return back()->with('error', 'Varian tidak bisa dihapus karena masih digunakan data lain.');
+        }
 
         return back()->with('success', 'Varian berhasil dihapus.');
     }
@@ -97,34 +106,41 @@ class AdminVariantController extends Controller
     public function storeItem(Request $request, Product $product, ProductVariant $variant)
     {
         $validated = $request->validate([
-            'items' => 'required|array|min:1',
-            'items.*' => 'required|string',
+            'content' => 'required|string|max:2000',
         ]);
 
-        $created = 0;
-        foreach ($validated['items'] as $content) {
-            $content = trim($content);
-            if (empty($content)) continue;
+        $content = trim($validated['content']);
 
-            // Skip duplikat
-            $exists = ProductItem::where('variant_id', $variant->id)
-                ->where('content', $content)
-                ->exists();
+        // Skip duplikat
+        $exists = ProductItem::where('variant_id', $variant->id)
+            ->where('content', $content)
+            ->exists();
 
-            if (!$exists) {
-                ProductItem::create([
-                    'product_id' => $product->id,
-                    'variant_id' => $variant->id,
-                    'content' => $content,
-                    'status' => 'available',
-                ]);
-                $created++;
-            }
+        if ($exists) {
+            return back()->with('error', 'Item dengan isi yang sama sudah ada.');
         }
+
+        ProductItem::create([
+            'product_id' => $product->id,
+            'variant_id' => $variant->id,
+            'content' => $content,
+            'status' => 'available',
+        ]);
 
         $variant->recalculateStock();
 
-        return back()->with('success', "{$created} stok berhasil ditambahkan.");
+        return back()->with('success', 'Stok berhasil ditambahkan.');
+    }
+
+    public function updateItem(Request $request, Product $product, ProductVariant $variant, ProductItem $item)
+    {
+        $validated = $request->validate([
+            'content' => 'required|string|max:2000',
+        ]);
+
+        $item->update(['content' => trim($validated['content'])]);
+
+        return back()->with('success', 'Item berhasil diperbarui.');
     }
 
     public function destroyItem(Product $product, ProductVariant $variant, ProductItem $item)

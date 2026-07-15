@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Product extends Model
 {
+
     protected $fillable = [
         'category_id',
         'name',
@@ -53,6 +54,11 @@ class Product extends Model
     public function items(): HasMany
     {
         return $this->hasMany(ProductItem::class);
+    }
+
+    public function orderItems(): HasMany
+    {
+        return $this->hasMany(OrderItem::class);
     }
 
     // Total stok dari semua variant

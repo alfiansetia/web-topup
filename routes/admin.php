@@ -34,6 +34,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('variants/{variant}/items', [AdminVariantController::class, 'items'])->name('variants.items');
         Route::post('variants/{variant}/items', [AdminVariantController::class, 'storeItem'])->name('variants.items.store');
         Route::delete('variants/{variant}/items/{item}', [AdminVariantController::class, 'destroyItem'])->name('variants.items.destroy');
+        Route::put('variants/{variant}/items/{item}', [AdminVariantController::class, 'updateItem'])->name('variants.items.update');
         Route::put('variants/{variant}/items/{item}/status', [AdminVariantController::class, 'updateItemStatus'])->name('variants.items.status');
     });
 

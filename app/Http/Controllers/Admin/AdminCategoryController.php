@@ -100,8 +100,9 @@ class AdminCategoryController extends Controller
 
     public function destroy(Category $category)
     {
+        // Cek apakah ada produk yang masih aktif
         if ($category->products()->exists()) {
-            return back()->with('error', 'Kategori masih memiliki produk. Hapus produk terlebih dahulu.');
+            return back()->with('error', 'Kategori tidak bisa dihapus karena masih memiliki produk.');
         }
 
         // Hapus gambar dari storage
@@ -109,7 +110,11 @@ class AdminCategoryController extends Controller
             Storage::disk('public')->delete('category/' . $category->image);
         }
 
-        $category->delete();
+        try {
+            $category->delete();
+        } catch (\Exception $e) {
+            return back()->with('error', 'Kategori tidak bisa dihapus karena masih digunakan data lain.');
+        }
 
         return redirect()->route('admin.categories.index')
             ->with('success', 'Kategori berhasil dihapus.');

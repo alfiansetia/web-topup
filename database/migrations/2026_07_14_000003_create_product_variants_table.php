@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('product_variants', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('product_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('product_id')->constrained()->restrictOnDelete();
             $table->string('name');                        // Private 1 Bulan, Shared 3 Bulan, dll
             $table->string('slug')->nullable();            // private-1-bulan (opsional, untuk URL)
             $table->text('description')->nullable();       // Keterangan variant

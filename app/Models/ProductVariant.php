@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ProductVariant extends Model
 {
+
     protected $fillable = [
         'product_id',
         'name',
@@ -36,6 +37,11 @@ class ProductVariant extends Model
     public function items(): HasMany
     {
         return $this->hasMany(ProductItem::class, 'variant_id');
+    }
+
+    public function orderItems(): HasMany
+    {
+        return $this->hasMany(OrderItem::class, 'variant_id');
     }
 
     // Harga efektif (diskon kalau ada)

@@ -150,18 +150,6 @@ class ShopController extends Controller
 
         $variant = ProductVariant::with('product')->findOrFail($validated['variant_id']);
 
-        // Cek stok
-        $availableItems = $variant->items()
-            ->where('status', 'available')
-            ->limit($validated['quantity'])
-            ->get();
-
-        if ($availableItems->count() < $validated['quantity']) {
-            return back()->withErrors([
-                'quantity' => 'Stok tidak cukup. Tersedia: ' . $availableItems->count(),
-            ]);
-        }
-
         $unitPrice = $variant->effective_price;
         $totalAmount = $unitPrice * $validated['quantity'];
 
@@ -190,18 +178,6 @@ class ShopController extends Controller
                 'quantity' => $validated['quantity'],
                 'subtotal' => $totalAmount,
             ]);
-
-            // Reserve stock & assign ke order item
-            foreach ($availableItems as $item) {
-                $item->update([
-                    'status' => 'reserved',
-                    'order_id' => $order->id,
-                    'order_item_id' => $orderItem->id,
-                ]);
-            }
-
-            // Recalculate stock
-            $variant->recalculateStock();
 
             // Create QRIS payment via Pakasir (inside transaction!)
             $payment = $this->pakasir->createQrisTransaction($order->order_number, (int) $totalAmount);

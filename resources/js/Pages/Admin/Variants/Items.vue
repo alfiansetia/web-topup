@@ -4,9 +4,8 @@ import { Head, useForm, router, Link } from "@inertiajs/vue3";
 import { ref } from "vue";
 import {
     ArchiveBoxIcon,
-    EyeIcon,
-    EyeSlashIcon,
-    ClipboardIcon,
+    PlusIcon,
+    PencilSquareIcon,
     CheckCircleIcon,
     ClockIcon,
     XCircleIcon,
@@ -19,27 +18,48 @@ const props = defineProps({
     variant: Object,
 });
 
-const bulkInput = ref("");
-const form = useForm({ items: [] });
+// Tambah item
+const addForm = useForm({ content: "" });
+const showAddForm = ref(false);
 
-const storeBulk = () => {
-    const lines = bulkInput.value
-        .split("\n")
-        .map((l) => l.trim())
-        .filter(Boolean);
-    if (!lines.length) return;
-
-    form.items = lines;
-    form.post(
+const storeItem = () => {
+    addForm.post(
         route("admin.variants.items.store", [
             props.product.id,
             props.variant.id,
         ]),
         {
             onSuccess: () => {
-                bulkInput.value = "";
-                form.reset();
+                addForm.reset();
+                showAddForm.value = false;
             },
+        },
+    );
+};
+
+// Edit item
+const editingId = ref(null);
+const editForm = useForm({ content: "" });
+
+const startEdit = (item) => {
+    editingId.value = item.id;
+    editForm.content = item.content;
+};
+
+const cancelEdit = () => {
+    editingId.value = null;
+    editForm.reset();
+};
+
+const saveEdit = (item) => {
+    editForm.put(
+        route("admin.variants.items.update", [
+            props.product.id,
+            props.variant.id,
+            item.id,
+        ]),
+        {
+            onSuccess: () => cancelEdit(),
         },
     );
 };
@@ -108,16 +128,6 @@ const statusColor = (status) =>
         reserved: "bg-yellow-100 text-yellow-700",
     })[status] || "bg-gray-100 text-gray-700";
 
-const maskContent = (text) => {
-    if (!text || text.length < 8) return "••••••••";
-    return text.substring(0, 4) + "••••" + text.substring(text.length - 4);
-};
-
-const showContent = ref({});
-const toggleContent = (id) => {
-    showContent.value[id] = !showContent.value[id];
-};
-
 const formatCurrency = (val) =>
     new Intl.NumberFormat("id-ID", {
         style: "currency",
@@ -157,37 +167,49 @@ const formatCurrency = (val) =>
             </p>
         </div>
 
-        <!-- Bulk Add Stock -->
+        <!-- Tambah Item -->
         <div class="bg-white rounded-xl shadow-sm border p-5 mb-6">
-            <h2 class="font-semibold text-gray-900 mb-3">
-                <ArchiveBoxIcon class="w-5 h-5 inline text-gray-500" /> Tambah
-                Stok (Massal)
-            </h2>
-            <form @submit.prevent="storeBulk" class="space-y-3">
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="font-semibold text-gray-900">
+                    <ArchiveBoxIcon class="w-5 h-5 inline text-gray-500" />
+                    Tambah Stok
+                </h2>
+                <button
+                    @click="showAddForm = !showAddForm"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors"
+                >
+                    <PlusIcon class="w-4 h-4" />
+                    {{ showAddForm ? "Tutup" : "Tambah Baru" }}
+                </button>
+            </div>
+            <form
+                v-if="showAddForm"
+                @submit.prevent="storeItem"
+                class="space-y-3"
+            >
                 <textarea
-                    v-model="bulkInput"
+                    v-model="addForm.content"
                     rows="5"
-                    class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm font-mono"
-                    placeholder="email1@contoh.com:password123&#10;email2@contoh.com:password456&#10;Satu akun per baris"
+                    class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                    placeholder="Masukkan isi konten item...&#10;Bisa berupa akun, kode lisensi, data apapun&#10;Tulis sebebas mungkin"
+                    required
                 ></textarea>
                 <div class="flex items-center justify-between">
                     <p class="text-xs text-gray-500">
-                        Format:
-                        <code class="bg-gray-100 px-1 rounded"
-                            >email:password</code
-                        >
-                        (satu per baris). Duplikat akan di-skip otomatis.
+                        Isi konten bebas — akun, lisensi, info, dll.
                     </p>
                     <button
                         type="submit"
-                        :disabled="form.processing || !bulkInput.trim()"
+                        :disabled="
+                            addForm.processing || !addForm.content.trim()
+                        "
                         class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50 transition-colors"
                     >
-                        {{ form.processing ? "Menambahkan..." : "Tambah Stok" }}
+                        {{ addForm.processing ? "Menambahkan..." : "Tambah" }}
                     </button>
                 </div>
-                <p v-if="form.errors.items" class="text-red-500 text-xs">
-                    {{ form.errors.items }}
+                <p v-if="addForm.errors.content" class="text-red-500 text-xs">
+                    {{ addForm.errors.content }}
                 </p>
             </form>
         </div>
@@ -207,7 +229,7 @@ const formatCurrency = (val) =>
                                 #
                             </th>
                             <th class="px-5 py-3 text-gray-500 font-medium">
-                                Isi Akun
+                                Isi Konten
                             </th>
                             <th class="px-5 py-3 text-gray-500 font-medium">
                                 Status
@@ -232,37 +254,41 @@ const formatCurrency = (val) =>
                                 {{ idx + 1 }}
                             </td>
                             <td class="px-5 py-3">
-                                <div class="flex items-center gap-2">
-                                    <code
-                                        class="text-xs bg-gray-50 px-2 py-1 rounded border font-mono"
+                                <!-- Mode Edit -->
+                                <div
+                                    v-if="editingId === item.id"
+                                    class="flex items-start gap-2"
+                                >
+                                    <textarea
+                                        v-model="editForm.content"
+                                        rows="3"
+                                        class="flex-1 border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                                    ></textarea>
+                                    <div
+                                        class="flex flex-col gap-1 flex-shrink-0"
                                     >
-                                        {{
-                                            showContent[item.id]
-                                                ? item.content
-                                                : maskContent(item.content)
-                                        }}
-                                    </code>
-                                    <button
-                                        @click="toggleContent(item.id)"
-                                        class="text-gray-400 hover:text-gray-600 text-xs"
+                                        <button
+                                            @click="saveEdit(item)"
+                                            :disabled="editForm.processing"
+                                            class="px-2.5 py-1.5 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors disabled:opacity-50"
+                                        >
+                                            Simpan
+                                        </button>
+                                        <button
+                                            @click="cancelEdit"
+                                            class="px-2.5 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                                        >
+                                            Batal
+                                        </button>
+                                    </div>
+                                </div>
+                                <!-- Mode Baca -->
+                                <div v-else>
+                                    <p
+                                        class="text-sm text-gray-800 whitespace-pre-wrap break-all max-w-md"
                                     >
-                                        <EyeSlashIcon
-                                            v-if="showContent[item.id]"
-                                            class="w-4 h-4"
-                                        />
-                                        <EyeIcon v-else class="w-4 h-4" />
-                                    </button>
-                                    <button
-                                        @click="
-                                            navigator.clipboard.writeText(
-                                                item.content,
-                                            )
-                                        "
-                                        class="text-gray-400 hover:text-gray-600 text-xs"
-                                        title="Copy"
-                                    >
-                                        <ClipboardIcon class="w-4 h-4" />
-                                    </button>
+                                        {{ item.content }}
+                                    </p>
                                 </div>
                             </td>
                             <td class="px-5 py-3">
@@ -284,6 +310,18 @@ const formatCurrency = (val) =>
                                 <div
                                     class="flex items-center justify-end gap-1"
                                 >
+                                    <button
+                                        v-if="
+                                            editingId !== item.id &&
+                                            item.status !== 'sold'
+                                        "
+                                        @click="startEdit(item)"
+                                        class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 rounded transition-colors"
+                                        title="Edit"
+                                    >
+                                        <PencilSquareIcon class="w-3.5 h-3.5" />
+                                        Edit
+                                    </button>
                                     <button
                                         v-if="item.status !== 'available'"
                                         @click="changeStatus(item, 'available')"
@@ -320,7 +358,10 @@ const formatCurrency = (val) =>
                                         Hapus
                                     </button>
                                     <span
-                                        v-else
+                                        v-if="
+                                            item.status === 'sold' &&
+                                            editingId !== item.id
+                                        "
                                         class="text-xs text-gray-400 italic"
                                         >Terjual</span
                                     >

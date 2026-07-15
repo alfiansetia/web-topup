@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('product_items', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('product_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('variant_id')->constrained('product_variants')->cascadeOnDelete();
+            $table->foreignId('product_id')->constrained()->restrictOnDelete();
+            $table->foreignId('variant_id')->constrained('product_variants')->restrictOnDelete();
             $table->text('content');                                // Isi akun: email:password atau data lainnya
             $table->enum('status', ['available', 'sold', 'reserved'])->default('available');
             $table->foreignId('order_id')->nullable();              // Terkait order saat terjual
