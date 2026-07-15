@@ -1022,8 +1022,11 @@ class TelegramBotService
 
             if ($payment) {
                 $order->update([
-                    'payment_ref'  => $payment['payment_number'] ?? null,
-                    'payment_url'  => $pakasir->getPaymentUrl($order->order_number, $amountInt),
+                    'payment_ref'                => $payment['payment_number'] ?? null,
+                    'payment_url'                => $pakasir->getPaymentUrl($order->order_number, $amountInt),
+                    'payment_fee'                => $payment['fee'] ?? 0,
+                    'payment_gateway_status'     => 'pending',
+                    'payment_gateway_response'   => $payment,
                 ]);
             } else {
                 // Fallback: generate direct URL

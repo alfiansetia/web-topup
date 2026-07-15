@@ -6,6 +6,7 @@ use App\Mail\OrderCancelled;
 use App\Models\Order;
 use App\Models\ProductVariant;
 use App\Services\PakasirService;
+use App\Services\TelegramBotService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -18,7 +19,8 @@ class CancelExpiredOrders extends Command
 
     public function handle(PakasirService $pakasir): int
     {
-        $expiredOrders = Order::where('status', 'pending')
+        $expiredOrders = Order::with('items.assignedItems')
+            ->where('status', 'pending')
             ->where('created_at', '<', now()->subHour())
             ->get();
 
@@ -62,11 +64,15 @@ class CancelExpiredOrders extends Command
 
                 $order->update([
                     'status'                 => 'cancelled',
+                    'canceled_at'            => now(),
                     'payment_gateway_status' => 'expired',
                 ]);
 
                 // Email notification (queued)
                 Mail::to($order->customer_email)->queue(new OrderCancelled($order));
+
+                // Telegram notification ke user
+                app(TelegramBotService::class)->notifyOrderStatus($order);
 
                 DB::commit();
                 $count++;

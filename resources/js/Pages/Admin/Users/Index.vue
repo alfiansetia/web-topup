@@ -10,6 +10,7 @@ import {
     TrashIcon,
     PencilSquareIcon,
     PlusIcon,
+    ChatBubbleLeftRightIcon,
 } from "@heroicons/vue/24/outline";
 import Swal from "sweetalert2";
 
@@ -164,6 +165,9 @@ const roleColor = (role) =>
                                 Login Via
                             </th>
                             <th class="px-5 py-3 text-gray-500 font-medium">
+                                Telegram
+                            </th>
+                            <th class="px-5 py-3 text-gray-500 font-medium">
                                 Status
                             </th>
                             <th class="px-5 py-3 text-gray-500 font-medium">
@@ -247,6 +251,20 @@ const roleColor = (role) =>
                                 </span>
                                 <span v-else class="text-xs text-gray-400"
                                     >Email/Password</span
+                                >
+                            </td>
+                            <td class="px-5 py-3">
+                                <span
+                                    v-if="user.telegram_id"
+                                    class="inline-flex items-center gap-1 text-xs text-green-700 bg-green-50 px-2 py-0.5 rounded-full"
+                                >
+                                    <ChatBubbleLeftRightIcon
+                                        class="w-3.5 h-3.5"
+                                    />
+                                    {{ user.telegram_id }}
+                                </span>
+                                <span v-else class="text-xs text-gray-400"
+                                    >-</span
                                 >
                             </td>
                             <td class="px-5 py-3">

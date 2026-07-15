@@ -4,8 +4,10 @@ import { Head, Link, useForm } from "@inertiajs/vue3";
 import {
     ArrowLeftIcon,
     UserIcon,
+    EnvelopeIcon,
     ShieldCheckIcon,
     KeyIcon,
+    ChatBubbleLeftRightIcon,
 } from "@heroicons/vue/24/outline";
 import { ref } from "vue";
 
@@ -15,6 +17,7 @@ const form = useForm({
     password: "",
     password_confirmation: "",
     role: "user",
+    telegram_id: "",
 });
 
 const showPassword = ref(false);
@@ -72,6 +75,7 @@ const submit = () => {
                 <!-- Email -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">
+                        <EnvelopeIcon class="w-4 h-4 inline text-gray-400" />
                         Email <span class="text-red-500">*</span>
                     </label>
                     <input
@@ -120,6 +124,7 @@ const submit = () => {
                 <!-- Password Confirmation -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">
+                        <KeyIcon class="w-4 h-4 inline text-gray-400" />
                         Konfirmasi Password
                         <span class="text-red-500">*</span>
                     </label>
@@ -129,6 +134,31 @@ const submit = () => {
                         placeholder="Ulangi password"
                         class="w-full rounded-lg ring-1 ring-inset ring-gray-300 py-2.5 px-3.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                     />
+                </div>
+
+                <!-- Telegram Chat ID -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        <ChatBubbleLeftRightIcon
+                            class="w-4 h-4 inline text-gray-400"
+                        />
+                        Telegram Chat ID
+                    </label>
+                    <input
+                        v-model="form.telegram_id"
+                        type="text"
+                        placeholder="Contoh: 123456789 (opsional)"
+                        class="w-full rounded-lg ring-1 ring-inset ring-gray-300 py-2.5 px-3.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                    />
+                    <p
+                        v-if="form.errors.telegram_id"
+                        class="text-red-500 text-xs mt-1"
+                    >
+                        {{ form.errors.telegram_id }}
+                    </p>
+                    <p class="text-xs text-gray-400 mt-1">
+                        Dapatkan dari bot Telegram dengan mengirim /start
+                    </p>
                 </div>
 
                 <!-- Role -->

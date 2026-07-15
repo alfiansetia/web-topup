@@ -262,9 +262,16 @@ class AdminOrderController extends Controller
             return back()->with('error', 'Hanya order yang sudah dibayar yang bisa diselesaikan.');
         }
 
+        $order->load('items.assignedItems');
+
+        // Pastikan order punya item
+        if ($order->items->isEmpty()) {
+            return back()->with('error', 'Order belum memiliki item. Tambahkan item terlebih dahulu.');
+        }
+
         // Cek setiap order item sudah assign sesuai quantity
         foreach ($order->items as $item) {
-            $assigned = $item->assignedItems()->count();
+            $assigned = $item->assignedItems->count();
             if ($assigned < $item->quantity) {
                 return back()->with('error', "\"{$item->product_name} ({$item->variant_name})\" baru assign {$assigned}/{$item->quantity} akun.");
             }
@@ -373,7 +380,7 @@ class AdminOrderController extends Controller
             // Cancel di Pakasir
             if ($order->status === 'pending' && $order->payment_gateway_status !== 'expired') {
                 try {
-                    $pakasir->cancelTransaction($order->id, $order->total_amount);
+                    $pakasir->cancelTransaction($order->order_number, (int) $order->total_amount);
                 } catch (\Exception $e) {
                     Log::warning("Failed to cancel Pakasir for order {$order->order_number}: {$e->getMessage()}");
                 }
