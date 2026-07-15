@@ -37,14 +37,22 @@ class AuthenticatedSessionController extends Controller
 
     /**
      * Handle an incoming authentication request.
+     *
+     * Uses Inertia::location() instead of redirect()->intended() to force
+     * a full browser page reload. This prevents a race condition where the
+     * XHR redirect follows the POST before the browser processes the new
+     * session cookie from session()->regenerate().
      */
-    public function store(LoginRequest $request): RedirectResponse
+    public function store(LoginRequest $request)
     {
         $request->authenticate();
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard.index', absolute: false));
+        // Determine intended URL, then clear it from session
+        $url = $request->session()->pull('url.intended', route('dashboard.index'));
+
+        return Inertia::location($url);
     }
 
     /**
