@@ -305,7 +305,7 @@ const userDropdownOpen = ref(false);
                             >
                             <a
                                 v-if="$page.props.telegram?.bot_username"
-                                :href="`https://t.me/${$page.props.telegram.bot_username}`"
+                                :href="`https://t.me/${$page.props.telegram.bot_username?.replace(/^@/, '')}`"
                                 target="_blank"
                                 class="flex items-center gap-2 text-sm text-gray-500 hover:text-blue-500 transition-colors"
                                 ><svg

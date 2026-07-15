@@ -111,7 +111,9 @@ const sendTest = () => {
                             >
                                 {{
                                     telegram.bot_username
-                                        ? "@" + telegram.bot_username
+                                        ? (telegram.bot_username.startsWith("@")
+                                              ? ""
+                                              : "@") + telegram.bot_username
                                         : "✗ Kosong"
                                 }}
                             </span>
