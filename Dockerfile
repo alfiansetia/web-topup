@@ -25,17 +25,21 @@ RUN apk add --no-cache \
     libzip-dev \
     icu-dev \
     oniguruma-dev \
-    $PHPIZE_DEPS
+    autoconf \
+    g++ \
+    make
 
-# Install PHP extensions
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg=/usr/include/ \
-    && docker-php-ext-install -j$(nproc) \
+# Install PHP extensions (GD)
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg
+RUN docker-php-ext-install gd
+
+# Install PHP extensions (lainnya)
+RUN docker-php-ext-install -j$(nproc) \
     pdo_mysql \
     mbstring \
     xml \
     bcmath \
     zip \
-    gd \
     intl \
     opcache \
     pcntl
