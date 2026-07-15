@@ -1,13 +1,20 @@
-# ── Stage 1: Build frontend assets ──
+# ── Stage 1: Install PHP dependencies ──
+FROM composer:2 AS vendor
+WORKDIR /app
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --no-scripts --no-autoloader --no-interaction
+
+# ── Stage 2: Build frontend assets ──
 FROM node:22-alpine AS frontend
 WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm ci
 COPY resources/ resources/
 COPY vite.config.js ./
+COPY --from=vendor /app/vendor vendor
 RUN npm run build
 
-# ── Stage 2: PHP application ──
+# ── Stage 3: PHP application ──
 FROM php:8.3-fpm-alpine
 
 # Install system dependencies
@@ -34,9 +41,6 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     opcache \
     pcntl
 
-# Install Redis extension via PECL
-RUN pecl install redis && docker-php-ext-enable redis
-
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
@@ -46,11 +50,12 @@ WORKDIR /var/www/html
 # Copy application files
 COPY . .
 
-# Copy built frontend assets from Stage 1
+# Copy vendor from Stage 1 & built frontend from Stage 2
+COPY --from=vendor /app/vendor vendor
 COPY --from=frontend /app/public/build public/build
 
-# Install PHP dependencies (production)
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+# Generate optimized autoloader
+RUN composer dump-autoload --optimize --no-dev
 
 # Set permissions for storage and bootstrap/cache
 RUN chown -R www-data:www-data storage bootstrap/cache \
