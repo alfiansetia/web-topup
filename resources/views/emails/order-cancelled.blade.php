@@ -1,12 +1,17 @@
 @extends('emails.layout')
 
-@section('content')
-    <span class="badge" style="background-color: #fee2e2; color: #991b1b;">❌ Pesanan Dibatalkan</span>
+@section('status')
+    Pesanan Dibatalkan
+@endsection
+@section('status-class')
+    status-cancelled
+@endsection
 
+@section('content')
     <p style="font-size: 15px; color: #374151; line-height: 1.6;">
         Halo <strong>{{ $order->customer_name }}</strong>,
         <br><br>
-        @if($order->payment_gateway_status === 'expired')
+        @if ($order->payment_gateway_status === 'expired')
             Pesanan Anda telah <strong>dibatalkan otomatis</strong> karena tidak dibayar dalam waktu 1 jam.
         @else
             Pesanan Anda telah <strong>dibatalkan</strong>.
@@ -24,14 +29,17 @@
         </div>
         <div class="info-row">
             <span class="info-label">Alasan</span>
-            <span class="info-value">{{ $order->payment_gateway_status === 'expired' ? 'Kedaluwarsa (lebih dari 1 jam)' : 'Dibatalkan oleh admin' }}</span>
+            <span
+                class="info-value">{{ $order->payment_gateway_status === 'expired' ? 'Kedaluwarsa (lebih dari 1 jam)' : 'Dibatalkan oleh admin' }}</span>
         </div>
         <hr class="divider">
-        @foreach($order->items as $item)
-        <div class="info-row">
-            <span class="info-label">{{ $item->product_name }} ({{ $item->variant_name }})</span>
-            <span class="info-value">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</span>
-        </div>
+        @foreach ($order->items as $item)
+            <div class="info-row">
+                <span class="info-label">{{ $item->product_name }}
+                    ({{ $item->variant_name }})
+                    {{ $item->quantity > 1 ? ' &times;' . $item->quantity : '' }}</span>
+                <span class="info-value">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</span>
+            </div>
         @endforeach
     </div>
 

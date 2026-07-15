@@ -51,7 +51,7 @@ class PakasirWebhookController extends Controller
             // Still process — Pakasir amount may include fee
         }
 
-        if ($status === 'paid' && $order->status === 'pending') {
+        if (($status === 'paid' || $status === 'completed') && $order->status === 'pending') {
             $order->update([
                 'status'                 => 'paid',
                 'paid_at'                => now(),

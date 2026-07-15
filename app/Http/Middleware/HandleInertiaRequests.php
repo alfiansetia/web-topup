@@ -33,6 +33,7 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'appName' => fn() => config('app.name', 'TopUp Store'),
             'site' => fn() => config('site'),
+            'telegram' => fn() => config('telegram'),
             'auth' => [
                 'user' => $request->user() ? [
                     'id' => $request->user()->id,

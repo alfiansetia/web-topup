@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facade\Storage;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
@@ -68,6 +68,8 @@ class AdminProductController extends Controller
             'category_id' => 'required|exists:categories,id',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'instruction_use' => 'nullable|string',
+            'checkout_instruction' => 'nullable|string|max:255',
             'features' => 'nullable|array',
             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp,svg|max:2048',
             'is_active' => 'boolean',
@@ -93,6 +95,8 @@ class AdminProductController extends Controller
             'category_id' => 'required|exists:categories,id',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'instruction_use' => 'nullable|string',
+            'checkout_instruction' => 'nullable|string|max:255',
             'features' => 'nullable|array',
             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp,svg|max:2048',
             'remove_image' => 'boolean',

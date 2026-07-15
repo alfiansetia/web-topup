@@ -76,11 +76,15 @@ const saveAssignments = () => {
         order_item_id: item.id,
         product_item_ids: assignments.value[String(item.id)] || [],
     }));
-    assignForm.post(route("admin.orders.assign-items", props.order.id));
+    assignForm.post(route("admin.orders.assign-items", props.order.id), {
+        onSuccess: () => router.reload(),
+    });
 };
 
 const saveNotes = () => {
-    notesForm.put(route("admin.orders.notes", props.order.id));
+    notesForm.put(route("admin.orders.notes", props.order.id), {
+        onSuccess: () => router.reload(),
+    });
 };
 
 const verifyPayment = () => {
@@ -95,7 +99,9 @@ const verifyPayment = () => {
         cancelButtonText: "Batal",
     }).then((result) => {
         if (result.isConfirmed) {
-            router.post(route("admin.orders.verify", props.order.id));
+            router.post(route("admin.orders.verify", props.order.id), {
+                onSuccess: () => router.reload(),
+            });
         }
     });
 };
@@ -126,7 +132,9 @@ const completeOrder = () => {
         cancelButtonText: "Batal",
     }).then((result) => {
         if (result.isConfirmed) {
-            router.post(route("admin.orders.complete", props.order.id));
+            router.post(route("admin.orders.complete", props.order.id), {
+                onSuccess: () => router.reload(),
+            });
         }
     });
 };
@@ -143,7 +151,28 @@ const cancelOrder = () => {
         cancelButtonText: "Batal",
     }).then((result) => {
         if (result.isConfirmed) {
-            router.post(route("admin.orders.cancel", props.order.id));
+            router.post(route("admin.orders.cancel", props.order.id), {
+                onSuccess: () => router.reload(),
+            });
+        }
+    });
+};
+
+const resendEmail = () => {
+    Swal.fire({
+        title: "Kirim Ulang Email?",
+        text: `Email notifikasi akan dikirim ulang ke ${props.order.customer_email}`,
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonColor: "#4f46e5",
+        cancelButtonColor: "#6b7280",
+        confirmButtonText: "Ya, Kirim",
+        cancelButtonText: "Batal",
+    }).then((result) => {
+        if (result.isConfirmed) {
+            router.post(route("admin.orders.resend-email", props.order.id), {
+                onSuccess: () => router.reload(),
+            });
         }
     });
 };
@@ -615,6 +644,25 @@ const currentStepIndex = statusSteps.findIndex(
                         >
                             <XCircleIcon class="w-5 h-5 inline" /> Batalkan
                             Order
+                        </button>
+                        <button
+                            @click="resendEmail"
+                            class="w-full bg-gray-50 hover:bg-gray-100 text-gray-700 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors border"
+                        >
+                            <svg
+                                class="w-5 h-5 inline"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke-width="2"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"
+                                />
+                            </svg>
+                            Kirim Ulang Email
                         </button>
                         <a
                             v-if="order.payment_proof"

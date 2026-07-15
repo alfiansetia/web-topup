@@ -1,8 +1,13 @@
 @extends('emails.layout')
 
-@section('content')
-    <span class="badge badge-green">✅ Pembayaran Berhasil</span>
+@section('status')
+    Pembayaran Berhasil
+@endsection
+@section('status-class')
+    status-paid
+@endsection
 
+@section('content')
     <p style="font-size: 15px; color: #374151; line-height: 1.6;">
         Halo <strong>{{ $order->customer_name }}</strong>,
         <br><br>
@@ -20,23 +25,27 @@
         </div>
         <div class="info-row">
             <span class="info-label">Waktu Pembayaran</span>
-            <span class="info-value">{{ $order->paid_at ? $order->paid_at->format('d M Y, H:i') : now()->format('d M Y, H:i') }}</span>
+            <span
+                class="info-value">{{ $order->paid_at ? $order->paid_at->format('d M Y, H:i') : now()->format('d M Y, H:i') }}</span>
         </div>
         <div class="info-row">
             <span class="info-label">Metode Pembayaran</span>
             <span class="info-value">QRIS</span>
         </div>
         <hr class="divider">
-        @foreach($order->items as $item)
-        <div class="info-row">
-            <span class="info-label">{{ $item->product_name }} ({{ $item->variant_name }})</span>
-            <span class="info-value">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</span>
-        </div>
+        @foreach ($order->items as $item)
+            <div class="info-row">
+                <span class="info-label">{{ $item->product_name }}
+                    ({{ $item->variant_name }})
+                    {{ $item->quantity > 1 ? ' &times;' . $item->quantity : '' }}</span>
+                <span class="info-value">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</span>
+            </div>
         @endforeach
         <hr class="divider">
         <div class="total-row">
             <span class="total-label">Total Dibayar</span>
-            <span class="total-value">Rp {{ number_format($order->payment_fee ? $order->total_amount + $order->payment_fee : $order->total_amount, 0, ',', '.') }}</span>
+            <span class="total-value">Rp
+                {{ number_format($order->payment_fee ? $order->total_amount + $order->payment_fee : $order->total_amount, 0, ',', '.') }}</span>
         </div>
     </div>
 

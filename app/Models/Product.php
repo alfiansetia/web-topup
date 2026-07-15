@@ -14,6 +14,7 @@ class Product extends Model
         'name',
         'slug',
         'description',
+        'instruction_use',
         'features',
         'checkout_instruction',
         'image',

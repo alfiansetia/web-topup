@@ -19,6 +19,8 @@ class EnsurePasswordSet
 
         if ($user && empty($user->getOriginal('password'))) {
             if (!$request->routeIs('password.set') && !$request->routeIs('password.set.store')) {
+                // Preserve intended URL so user returns after setting password
+                session()->put('url.intended', url()->current());
                 return redirect()->route('password.set');
             }
         }

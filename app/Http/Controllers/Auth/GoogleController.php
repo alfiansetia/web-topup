@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\InvalidStateException;
@@ -14,8 +15,18 @@ class GoogleController extends Controller
     /**
      * Redirect to Google OAuth page.
      */
-    public function redirect(): RedirectResponse
+    public function redirect(Request $request): RedirectResponse
     {
+        // Store intended URL before OAuth redirect (Referer is lost during OAuth flow)
+        if ($request->header('referer') && !$request->session()->has('url.intended')) {
+            $referer = $request->header('referer');
+            $ignore = ['/login', '/register', '/forgot-password'];
+            $path = parse_url($referer, PHP_URL_PATH);
+            if (!in_array($path, $ignore)) {
+                $request->session()->put('url.intended', $referer);
+            }
+        }
+
         return Socialite::driver('google')
             ->redirect();
     }

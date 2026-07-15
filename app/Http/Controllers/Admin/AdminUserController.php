@@ -40,6 +40,37 @@ class AdminUserController extends Controller
         ]);
     }
 
+    public function edit(User $user): Response
+    {
+        return Inertia::render('Admin/Users/Edit', [
+            'user' => $user->only(['id', 'name', 'email', 'role', 'is_blocked']),
+        ]);
+    }
+
+    public function update(Request $request, User $user): RedirectResponse
+    {
+        $request->validate([
+            'name'       => 'required|string|max:255',
+            'email'      => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'role'       => 'required|in:admin,user',
+            'is_blocked' => 'required|boolean',
+        ]);
+
+        // Prevent removing own admin role
+        if ($user->id === auth()->id() && $request->role !== 'admin') {
+            return back()->with('error', 'Anda tidak bisa mengubah role diri sendiri.');
+        }
+
+        $user->update([
+            'name'       => $request->name,
+            'email'      => $request->email,
+            'role'       => $request->role,
+            'is_blocked' => $request->is_blocked,
+        ]);
+
+        return redirect()->route('admin.users.index')->with('success', "User {$user->name} berhasil diperbarui.");
+    }
+
     public function toggleBlock(User $user): RedirectResponse
     {
         // Prevent blocking self

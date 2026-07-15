@@ -25,6 +25,6 @@ class SetPasswordController extends Controller
             'password' => bcrypt($request->password),
         ]);
 
-        return redirect()->route('dashboard.index')->with('success', 'Password berhasil diatur! Sekarang Anda bisa login tanpa Google.');
+        return redirect()->intended(route('dashboard.index'))->with('success', 'Password berhasil diatur! Sekarang Anda bisa login tanpa Google.');
     }
 }

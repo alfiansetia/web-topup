@@ -1,13 +1,14 @@
 <script setup>
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import Pagination from "@/Components/Pagination.vue";
-import { Head, router } from "@inertiajs/vue3";
+import { Head, Link, router } from "@inertiajs/vue3";
 import { ref } from "vue";
 import {
     MagnifyingGlassIcon,
     NoSymbolIcon,
     CheckCircleIcon,
     TrashIcon,
+    PencilSquareIcon,
 } from "@heroicons/vue/24/outline";
 import Swal from "sweetalert2";
 
@@ -269,6 +270,15 @@ const roleColor = (role) =>
                                 <div
                                     class="flex items-center justify-end gap-1"
                                 >
+                                    <Link
+                                        :href="
+                                            route('admin.users.edit', user.id)
+                                        "
+                                        title="Edit"
+                                        class="p-1.5 rounded-lg text-indigo-600 hover:bg-indigo-50 transition-colors"
+                                    >
+                                        <PencilSquareIcon class="w-4 h-4" />
+                                    </Link>
                                     <button
                                         v-if="
                                             user.id !==

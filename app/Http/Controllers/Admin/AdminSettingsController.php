@@ -13,12 +13,21 @@ class AdminSettingsController extends Controller
     {
         $telegramConfigured = config('telegram.bot_token') && !empty(config('telegram.chat_ids'));
 
+        $isProduction = config('payment.pakasir_is_production', false);
+
         return Inertia::render('Admin/Settings/Index', [
             'telegram' => [
                 'configured'      => $telegramConfigured,
+                'bot_username'     => config('telegram.bot_username'),
                 'notify_new_order' => config('telegram.notify_new_order', true),
                 'notify_paid'      => config('telegram.notify_paid', true),
                 'chat_ids'         => config('telegram.chat_ids', []),
+            ],
+            'pakasir' => [
+                'slug'          => config('payment.pakasir_slug'),
+                'secret_set'    => !empty(config('payment.pakasir_secret_key')),
+                'is_production' => $isProduction,
+                'webhook_url'   => url('/api/webhook/pakasir'),
             ],
         ]);
     }
@@ -31,10 +40,10 @@ class AdminSettingsController extends Controller
 
         $appName = config('app.name', 'TopUp Store');
         $text = "🧪 <b>Test Notification</b>\n"
-             . "━━━━━━━━━━━━━━━━\n"
-             . "Ini adalah pesan test dari <b>{$appName}</b>.\n"
-             . "Jika Anda menerima pesan ini, konfigurasi Telegram sudah benar ✅\n"
-             . "📅 " . now()->format('d M Y H:i:s');
+            . "━━━━━━━━━━━━━━━━\n"
+            . "Ini adalah pesan test dari <b>{$appName}</b>.\n"
+            . "Jika Anda menerima pesan ini, konfigurasi Telegram sudah benar ✅\n"
+            . "📅 " . now()->format('d M Y H:i:s');
 
         $result = $telegram->sendMessage($text);
 

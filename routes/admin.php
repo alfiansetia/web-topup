@@ -43,6 +43,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Users
     Route::get('users', [AdminUserController::class, 'index'])->name('users.index');
+    Route::get('users/{user}/edit', [AdminUserController::class, 'edit'])->name('users.edit');
+    Route::put('users/{user}', [AdminUserController::class, 'update'])->name('users.update');
     Route::put('users/{user}/toggle-block', [AdminUserController::class, 'toggleBlock'])->name('users.toggle-block');
     Route::delete('users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
     Route::post('orders/{order}/verify', [AdminOrderController::class, 'verifyPayment'])->name('orders.verify');
@@ -50,6 +52,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('orders/{order}/complete', [AdminOrderController::class, 'complete'])->name('orders.complete');
     Route::post('orders/{order}/cancel', [AdminOrderController::class, 'cancel'])->name('orders.cancel');
     Route::put('orders/{order}/notes', [AdminOrderController::class, 'updateNotes'])->name('orders.notes');
+    Route::post('orders/{order}/resend-email', [AdminOrderController::class, 'resendEmail'])->name('orders.resend-email');
 
     // Settings
     Route::get('settings', [AdminSettingsController::class, 'index'])->name('settings.index');

@@ -20,6 +20,8 @@ const form = useForm({
     category_id: "",
     name: "",
     description: "",
+    instruction_use: "",
+    checkout_instruction: "",
     features: "",
     image: null,
     is_active: true,
@@ -92,6 +94,21 @@ const submit = () => {
                     v-model="form.description"
                     label="Deskripsi"
                     :rows="3"
+                />
+
+                <FormTextarea
+                    v-model="form.instruction_use"
+                    label="Cara Penggunaan"
+                    hint="Tampil di email setelah pesanan selesai"
+                    placeholder="Login menggunakan email dan password yang dikirimkan..."
+                    :rows="3"
+                />
+
+                <FormInput
+                    v-model="form.checkout_instruction"
+                    label="Instruksi Checkout"
+                    hint="Tampil di halaman checkout"
+                    placeholder="Cantumkan email akun Anda di kolom keterangan"
                 />
 
                 <FormTextarea

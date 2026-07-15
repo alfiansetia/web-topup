@@ -46,6 +46,14 @@ const formatCurrency = (val) =>
                         <dd>{{ product.description || "—" }}</dd>
                     </div>
                     <div class="flex">
+                        <dt class="w-32 text-gray-500">Cara Pakai</dt>
+                        <dd>{{ product.instruction_use || "—" }}</dd>
+                    </div>
+                    <div class="flex">
+                        <dt class="w-32 text-gray-500">Checkout Info</dt>
+                        <dd>{{ product.checkout_instruction || "—" }}</dd>
+                    </div>
+                    <div class="flex">
                         <dt class="w-32 text-gray-500">Status</dt>
                         <dd>
                             <span

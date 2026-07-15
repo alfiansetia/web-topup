@@ -5,6 +5,7 @@ import { ref } from "vue";
 
 const props = defineProps({
     telegram: Object,
+    pakasir: Object,
 });
 
 const testForm = useForm({});
@@ -92,6 +93,25 @@ const sendTest = () => {
                                 {{
                                     telegram.configured
                                         ? "✓ Terisi"
+                                        : "✗ Kosong"
+                                }}
+                            </span>
+                        </div>
+                        <div
+                            class="flex items-center justify-between py-2 border-b border-gray-100"
+                        >
+                            <span class="text-gray-500">Bot Username</span>
+                            <span
+                                class="font-medium"
+                                :class="
+                                    telegram.bot_username
+                                        ? 'text-green-600'
+                                        : 'text-red-500'
+                                "
+                            >
+                                {{
+                                    telegram.bot_username
+                                        ? "@" + telegram.bot_username
                                         : "✗ Kosong"
                                 }}
                             </span>
@@ -249,21 +269,80 @@ const sendTest = () => {
                         </div>
                     </div>
                 </div>
-                <div class="p-6">
-                    <p class="text-sm text-gray-500">
-                        Konfigurasi Pakasir di file
-                        <code class="bg-gray-100 px-1.5 py-0.5 rounded"
-                            >.env</code
+                <div class="p-6 space-y-3">
+                    <div class="space-y-2">
+                        <div
+                            class="flex items-center justify-between py-2 border-b border-gray-100"
+                        >
+                            <span class="text-gray-500">Slug / Project</span>
+                            <span
+                                class="font-medium"
+                                :class="
+                                    pakasir.slug
+                                        ? 'text-green-600'
+                                        : 'text-red-500'
+                                "
+                            >
+                                {{ pakasir.slug || "✗ Kosong" }}
+                            </span>
+                        </div>
+                        <div
+                            class="flex items-center justify-between py-2 border-b border-gray-100"
+                        >
+                            <span class="text-gray-500">Secret Key</span>
+                            <span
+                                class="font-medium"
+                                :class="
+                                    pakasir.secret_set
+                                        ? 'text-green-600'
+                                        : 'text-red-500'
+                                "
+                            >
+                                {{
+                                    pakasir.secret_set ? "✓ Terisi" : "✗ Kosong"
+                                }}
+                            </span>
+                        </div>
+                        <div
+                            class="flex items-center justify-between py-2 border-b border-gray-100"
+                        >
+                            <span class="text-gray-500">Mode</span>
+                            <span
+                                class="px-2 py-0.5 text-xs rounded-full"
+                                :class="
+                                    pakasir.is_production
+                                        ? 'bg-green-100 text-green-700'
+                                        : 'bg-yellow-100 text-yellow-700'
+                                "
+                            >
+                                {{
+                                    pakasir.is_production
+                                        ? "Production"
+                                        : "Sandbox"
+                                }}
+                            </span>
+                        </div>
+                        <div class="flex items-center justify-between py-2">
+                            <span class="text-gray-500">Webhook URL</span>
+                            <code
+                                class="text-xs bg-gray-100 px-2 py-1 rounded select-all"
+                                >{{ pakasir.webhook_url }}</code
+                            >
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-400 pt-2">
+                        Konfigurasi di file
+                        <code class="bg-gray-100 px-1 py-0.5 rounded">.env</code
                         >:
-                        <code class="bg-gray-100 px-1.5 py-0.5 rounded"
+                        <code class="bg-gray-100 px-1 py-0.5 rounded"
                             >PAKASIR_SLUG</code
                         >,
-                        <code class="bg-gray-100 px-1.5 py-0.5 rounded"
+                        <code class="bg-gray-100 px-1 py-0.5 rounded"
                             >PAKASIR_SECRET_KEY</code
-                        >. Webhook URL:
-                        <code class="bg-gray-100 px-1.5 py-0.5 rounded">{{
-                            route("pakasir.webhook")
-                        }}</code>
+                        >,
+                        <code class="bg-gray-100 px-1 py-0.5 rounded"
+                            >PAKASIR_IS_PRODUCTION</code
+                        >
                     </p>
                 </div>
             </div>

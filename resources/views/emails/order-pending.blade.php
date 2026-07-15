@@ -1,12 +1,18 @@
 @extends('emails.layout')
 
-@section('content')
-    <span class="badge badge-yellow">⏳ Menunggu Pembayaran</span>
+@section('status')
+    Menunggu Pembayaran
+@endsection
+@section('status-class')
+    status-pending
+@endsection
 
+@section('content')
     <p style="font-size: 15px; color: #374151; line-height: 1.6;">
         Halo <strong>{{ $order->customer_name }}</strong>,
         <br><br>
-        Pesanan Anda berhasil dibuat. Silakan lakukan pembayaran sebelum <strong>1 jam</strong> agar pesanan tidak dibatalkan otomatis.
+        Pesanan Anda berhasil dibuat. Silakan lakukan pembayaran sebelum <strong>1 jam</strong> agar pesanan tidak
+        dibatalkan otomatis.
     </p>
 
     <div class="info-box">
@@ -19,32 +25,35 @@
             <span class="info-value">{{ $order->created_at->format('d M Y, H:i') }}</span>
         </div>
         <hr class="divider">
-        @foreach($order->items as $item)
-        <div class="info-row">
-            <span class="info-label">{{ $item->product_name }} ({{ $item->variant_name }})</span>
-            <span class="info-value">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</span>
-        </div>
+        @foreach ($order->items as $item)
+            <div class="info-row">
+                <span class="info-label">{{ $item->product_name }}
+                    ({{ $item->variant_name }})
+                    {{ $item->quantity > 1 ? ' &times;' . $item->quantity : '' }}</span>
+                <span class="info-value">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</span>
+            </div>
         @endforeach
         <hr class="divider">
-        @if($order->payment_fee && $order->payment_fee > 0)
-        <div class="info-row">
-            <span class="info-label">Harga Produk</span>
-            <span class="info-value">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</span>
-        </div>
-        <div class="info-row">
-            <span class="info-label">Biaya Admin (QRIS)</span>
-            <span class="info-value">Rp {{ number_format($order->payment_fee, 0, ',', '.') }}</span>
-        </div>
-        <hr class="divider">
-        <div class="total-row">
-            <span class="total-label">Total Pembayaran</span>
-            <span class="total-value">Rp {{ number_format($order->total_amount + $order->payment_fee, 0, ',', '.') }}</span>
-        </div>
+        @if ($order->payment_fee && $order->payment_fee > 0)
+            <div class="info-row">
+                <span class="info-label">Harga Produk</span>
+                <span class="info-value">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Biaya Admin (QRIS)</span>
+                <span class="info-value">Rp {{ number_format($order->payment_fee, 0, ',', '.') }}</span>
+            </div>
+            <hr class="divider">
+            <div class="total-row">
+                <span class="total-label">Total Pembayaran</span>
+                <span class="total-value">Rp
+                    {{ number_format($order->total_amount + $order->payment_fee, 0, ',', '.') }}</span>
+            </div>
         @else
-        <div class="total-row">
-            <span class="total-label">Total Pembayaran</span>
-            <span class="total-value">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</span>
-        </div>
+            <div class="total-row">
+                <span class="total-label">Total Pembayaran</span>
+                <span class="total-value">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</span>
+            </div>
         @endif
     </div>
 

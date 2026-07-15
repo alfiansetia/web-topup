@@ -4,7 +4,6 @@ use App\Http\Controllers\Auth\SetPasswordController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ShopController;
-use App\Http\Controllers\PakasirWebhookController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -22,9 +21,6 @@ Route::get('/lacak', function () {
     return Inertia::render('Shop/Track');
 })->name('shop.track');
 Route::post('/lacak', [ShopController::class, 'trackOrder'])->name('shop.track.submit');
-
-// ===== PAKASIR WEBHOOK =====
-Route::post('/webhook/pakasir', [PakasirWebhookController::class, 'handle'])->name('pakasir.webhook');
 
 // ===== SET PASSWORD (Google users) =====
 Route::middleware(['auth'])->group(function () {

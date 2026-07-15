@@ -75,22 +75,23 @@ class TelegramService
         if (!$this->notifyNewOrder) return false;
 
         $items = $order->items->map(function ($item) {
-            return "  • {$item->product_name} ({$item->variant_name}) — Rp " . number_format($item->subtotal, 0, ',', '.');
+            $qty = $item->quantity > 1 ? " x{$item->quantity}" : '';
+            return "  • {$item->product_name} ({$item->variant_name}){$qty} — Rp " . number_format($item->subtotal, 0, ',', '.');
         })->implode("\n");
 
         $url = url(route('admin.orders.show', $order->id));
 
         $text = "🆕 <b>Pesanan Baru</b>\n"
-             . "━━━━━━━━━━━━━━━━\n"
-             . "📋 <code>{$order->order_number}</code>\n"
-             . "👤 {$order->customer_name}\n"
-             . "📧 {$order->customer_email}\n"
-             . "━━━━━━━━━━━━━━━━\n"
-             . "{$items}\n"
-             . "━━━━━━━━━━━━━━━━\n"
-             . "💰 Total: <b>Rp " . number_format($order->total_amount, 0, ',', '.') . "</b>\n"
-             . "⏳ Status: Menunggu Pembayaran\n"
-             . "\n🔗 <a href=\"{$url}\">Lihat Pesanan</a>";
+            . "━━━━━━━━━━━━━━━━\n"
+            . "📋 <code>{$order->order_number}</code>\n"
+            . "👤 {$order->customer_name}\n"
+            . "📧 {$order->customer_email}\n"
+            . "━━━━━━━━━━━━━━━━\n"
+            . "{$items}\n"
+            . "━━━━━━━━━━━━━━━━\n"
+            . "💰 Total: <b>Rp " . number_format($order->total_amount, 0, ',', '.') . "</b>\n"
+            . "⏳ Status: Menunggu Pembayaran\n"
+            . "\n🔗 <a href=\"{$url}\">Lihat Pesanan</a>";
 
         return $this->sendMessage($text);
     }
@@ -105,13 +106,13 @@ class TelegramService
         $url = url(route('admin.orders.show', $order->id));
 
         $text = "✅ <b>Pesanan Dibayar</b>\n"
-             . "━━━━━━━━━━━━━━━━\n"
-             . "📋 <code>{$order->order_number}</code>\n"
-             . "👤 {$order->customer_name}\n"
-             . "💰 Total: <b>Rp " . number_format($order->total_amount, 0, ',', '.') . "</b>\n"
-             . "🏦 Metode: QRIS\n"
-             . "📅 " . ($order->paid_at ? $order->paid_at->format('d M Y H:i') : now()->format('d M Y H:i'))
-             . "\n\n🔗 <a href=\"{$url}\">Lihat Pesanan</a>";
+            . "━━━━━━━━━━━━━━━━\n"
+            . "📋 <code>{$order->order_number}</code>\n"
+            . "👤 {$order->customer_name}\n"
+            . "💰 Total: <b>Rp " . number_format($order->total_amount, 0, ',', '.') . "</b>\n"
+            . "🏦 Metode: QRIS\n"
+            . "📅 " . ($order->paid_at ? $order->paid_at->format('d M Y H:i') : now()->format('d M Y H:i'))
+            . "\n\n🔗 <a href=\"{$url}\">Lihat Pesanan</a>";
 
         return $this->sendMessage($text);
     }

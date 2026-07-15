@@ -196,6 +196,31 @@ class AdminOrderController extends Controller
         return back()->with('success', 'Pembayaran berhasil diverifikasi.');
     }
 
+    // Kirim ulang email notifikasi sesuai status order
+    public function resendEmail(Order $order)
+    {
+        try {
+            $order->load('items');
+
+            if ($order->status === 'completed') {
+                Mail::to($order->customer_email)->queue(new OrderCompleted($order));
+            } elseif ($order->status === 'paid') {
+                Mail::to($order->customer_email)->queue(new OrderPaymentSuccess($order));
+            } elseif ($order->status === 'pending') {
+                Mail::to($order->customer_email)->queue(new \App\Mail\OrderPendingPayment($order));
+            } elseif ($order->status === 'cancelled') {
+                Mail::to($order->customer_email)->queue(new OrderCancelled($order));
+            } else {
+                return back()->with('error', 'Status order tidak mendukung pengiriman email.');
+            }
+
+            return back()->with('success', 'Email notifikasi berhasil dikirim ulang ke ' . $order->customer_email);
+        } catch (\Exception $e) {
+            Log::error('Gagal kirim ulang email', ['order' => $order->order_number, 'error' => $e->getMessage()]);
+            return back()->with('error', 'Gagal mengirim email: ' . $e->getMessage());
+        }
+    }
+
     // Update catatan admin
     public function updateNotes(Request $request, Order $order)
     {

@@ -21,6 +21,8 @@ const form = useForm({
     category_id: props.product.category_id,
     name: props.product.name,
     description: props.product.description || "",
+    instruction_use: props.product.instruction_use || "",
+    checkout_instruction: props.product.checkout_instruction || "",
     features: props.product.features ? props.product.features.join("\n") : "",
     image: null,
     remove_image: false,
@@ -105,6 +107,21 @@ const submit = () => {
                     v-model="form.description"
                     label="Deskripsi"
                     :rows="3"
+                />
+
+                <FormTextarea
+                    v-model="form.instruction_use"
+                    label="Cara Penggunaan"
+                    hint="Tampil di email setelah pesanan selesai"
+                    placeholder="Login menggunakan email dan password yang dikirimkan..."
+                    :rows="3"
+                />
+
+                <FormInput
+                    v-model="form.checkout_instruction"
+                    label="Instruksi Checkout"
+                    hint="Tampil di halaman checkout"
+                    placeholder="Cantumkan email akun Anda di kolom keterangan"
                 />
 
                 <FormTextarea

@@ -16,8 +16,19 @@ class AuthenticatedSessionController extends Controller
     /**
      * Display the login view.
      */
-    public function create(): Response
+    public function create(Request $request): Response
     {
+        // Store intended URL from Referer so redirect()->intended() works after login
+        if ($request->header('referer') && !$request->session()->has('url.intended')) {
+            $referer = $request->header('referer');
+            // Don't store login/register pages as intended
+            $ignore = ['/login', '/register', '/forgot-password'];
+            $path = parse_url($referer, PHP_URL_PATH);
+            if (!in_array($path, $ignore)) {
+                $request->session()->put('url.intended', $referer);
+            }
+        }
+
         return Inertia::render('Auth/Login', [
             'canResetPassword' => Route::has('password.request'),
             'status' => session('status'),
