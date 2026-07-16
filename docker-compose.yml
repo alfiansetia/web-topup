@@ -62,6 +62,8 @@ services:
         environment:
             MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootsecret}
             MYSQL_DATABASE: ${DB_DATABASE:-topup}
+            MYSQL_USER: ${DB_USERNAME:-user}
+            MYSQL_PASSWORD: ${DB_PASSWORD:-secret}
         volumes:
             - mysql-data:/var/lib/mysql
         healthcheck:
