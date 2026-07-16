@@ -12,7 +12,7 @@ services:
         volumes:
             - .:/var/www
         command: >
-            sh -c "php artisan migrate --force && php-fpm"
+            sh -c "composer install --no-dev --optimize-autoloader && php artisan migrate --force && php-fpm"
         depends_on:
             web-topup-db:
                 condition: service_healthy
