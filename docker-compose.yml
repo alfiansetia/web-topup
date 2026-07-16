@@ -8,7 +8,9 @@ services:
         env_file:
             - .env
         volumes:
-            # Hapus volume app_code, cukup mount storage saja
+            # 1. Share HANYA folder public ke volume agar terbaca oleh Nginx
+            - public_assets:/var/www/html/public
+            # 2. Folder storage tetap pakai volume terpisah untuk upload user
             - storage_data:/var/www/html/storage
         networks:
             - shared_network
@@ -23,7 +25,7 @@ services:
             - .env
         command: php artisan queue:work --tries=3 --timeout=90
         volumes:
-            # Hapus volume app_code, cukup mount storage saja
+            # Worker tidak butuh folder public, cukup storage saja
             - storage_data:/var/www/html/storage
         networks:
             - shared_network
@@ -37,16 +39,16 @@ services:
         ports:
             - "8999:80"
         volumes:
-            # Karena app_code dihapus, kita mount folder public lokal saja ke Nginx
-            # agar Nginx bisa membaca file CSS/JS hasil compile Vite Anda
-            - ./public:/var/www/html/public:ro
+            # 3. Nginx membaca folder public asli dari container app (bukan dari host!)
+            - public_assets:/var/www/html/public:ro
             - storage_data:/var/www/html/storage:ro
             - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
         networks:
             - shared_network
 
 volumes:
-    storage_data: # Cukup sisakan volume ini saja
+    storage_data:
+    public_assets: # Volume baru khusus untuk berbagi CSS/JS hasil compile Vite
 
 networks:
     shared_network:
