@@ -1,83 +1,51 @@
-# ── Stage 1: Install PHP dependencies ──
-FROM composer:2 AS vendor
-WORKDIR /app
-COPY composer.json composer.lock ./
-RUN composer install --no-dev --no-scripts --no-autoloader --no-interaction
+# === STAGE 1: Install Composer & Node Modules ===
+FROM php:8.3-fpm-alpine AS backend-builder
 
-# ── Stage 2: Build frontend assets ──
-FROM node:22-alpine AS frontend
+# Install dependensi minimal untuk composer install
+RUN apk add --no-cache git unzip zip
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 WORKDIR /app
-COPY package.json package-lock.json* ./
+COPY . .
+# Bikin folder vendor dulu
+RUN composer install --no-interaction --no-dev --ignore-platform-reqs
+
+# === STAGE 2: Build Frontend (Vite) ===
+FROM node:20-alpine AS frontend-builder
+WORKDIR /app
+# Salin semua source code beserta folder vendor dari STAGE 1
+COPY --from=backend-builder /app /app
 RUN npm ci
-COPY resources/ resources/
-COPY vite.config.js ./
-COPY --from=vendor /app/vendor vendor
 RUN npm run build
 
-# ── Stage 3: PHP application ──
+# === STAGE 3: Image Final (PHP-FPM) ===
 FROM php:8.3-fpm-alpine
 
-# Install system dependencies
 RUN apk add --no-cache \
-    bash \
-    libpng-dev \
-    libjpeg-turbo-dev \
     freetype-dev \
+    libjpeg-turbo-dev \
+    libpng-dev \
     libzip-dev \
-    icu-dev \
-    icu-data-full \
-    oniguruma-dev \
-    libxml2-dev \
-    mariadb-dev \
-    autoconf \
-    g++ \
-    make
-
-# Install PHP extensions
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) \
-    pdo_mysql \
-    mbstring \
-    xml \
-    bcmath \
     zip \
-    gd \
-    intl \
-    opcache \
-    pcntl
+    unzip \
+    git \
+    oniguruma-dev \
+    curl-dev \
+    netcat-openbsd
 
-# Install Composer
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) gd pdo_mysql mbstring zip exif pcntl
 
-# Set working directory
-WORKDIR /var/www/html
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Copy application files
+WORKDIR /var/www
 COPY . .
 
-# Copy vendor from Stage 1 & built frontend from Stage 2
-COPY --from=vendor /app/vendor vendor
-COPY --from=frontend /app/public/build public/build
+# Salin folder vendor utuh dari STAGE 1
+COPY --from=backend-builder /app/vendor ./vendor
+# Salin hasil build dari STAGE 2
+COPY --from=frontend-builder /app/public/build ./public/build
 
-# Generate optimized autoloader
-RUN composer dump-autoload --optimize --no-dev
-
-# Set permissions for storage and bootstrap/cache
-RUN chown -R www-data:www-data storage bootstrap/cache \
-    && chmod -R 775 storage bootstrap/cache
-
-# Ensure .env exists for artisan commands
-RUN cp .env.example .env 2>/dev/null || true
-
-# Generate app key if not set
-RUN php artisan key:generate 2>/dev/null || true
-
-# Copy entrypoints
-COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
-COPY docker/entrypoint-worker.sh /usr/local/bin/entrypoint-worker.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/entrypoint-worker.sh
+RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
 EXPOSE 9000
-
-ENTRYPOINT ["entrypoint.sh"]
 CMD ["php-fpm"]

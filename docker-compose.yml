@@ -1,71 +1,75 @@
 services:
-    # ── Nginx Web Server ──
-    nginx:
-        image: nginx:alpine
-        container_name: topup-nginx
-        ports:
-            - "8999:80"
-        volumes:
-            - .:/var/www/html
-            - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
-        depends_on:
-            app:
-                condition: service_started
-        networks:
-            - topup-net
-
-    # ── PHP-FPM Application ──
+    # 1. Aplikasi PHP-FPM (PHP 8.3)
     app:
         build:
             context: .
             dockerfile: Dockerfile
-        container_name: topup-app
-        env_file:
-            - .env
+        image: web-topup-app:latest
+        container_name: web_topup_app
+        restart: unless-stopped
+        working_dir: /var/www
+        env_file: .env # <-- PAKSA BACA ENV
         volumes:
-            - .:/var/www/html
-            - /var/www/html/vendor
-            - /var/www/html/node_modules
+            - .:/var/www
+        command: >
+            sh -c "php artisan migrate --force && php-fpm"
         depends_on:
-            mysql:
+            web-topup-db:
                 condition: service_healthy
         networks:
-            - topup-net
+            - web_topup_net
 
-    # ── Queue Worker ──
-    queue:
+    # 2. Laravel Queue Worker
+    worker:
         build:
             context: .
             dockerfile: Dockerfile
-        container_name: topup-queue
-        entrypoint: ["entrypoint-worker.sh"]
-        command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
-        env_file:
-            - .env
+        image: web-topup-app:latest
+        container_name: web_topup_worker
+        restart: unless-stopped
+        working_dir: /var/www
+        env_file: .env # <-- PAKSA BACA ENV
         volumes:
-            - .:/var/www/html
-            - /var/www/html/vendor
-            - /var/www/html/node_modules
+            - .:/var/www
+        command: php artisan queue:work --verbose --tries=3 --timeout=90
         depends_on:
             app:
                 condition: service_started
+            web-topup-db:
+                condition: service_healthy
         networks:
-            - topup-net
-        restart: unless-stopped
+            - web_topup_net
 
-    # ── MySQL Database ──
-    mysql:
+    # 3. Web Server Nginx (Port 8999)
+    nginx:
+        image: nginx:alpine
+        container_name: web_topup_nginx
+        restart: unless-stopped
+        ports:
+            - "8999:80"
+        volumes:
+            - .:/var/www
+            - ./nginx.conf:/etc/nginx/conf.d/default.conf
+        depends_on:
+            - app
+        networks:
+            - web_topup_net
+
+    # 4. Database MySQL
+    web-topup-db:
         image: mysql:8.0
-        container_name: topup-mysql
+        container_name: web_topup_db
+        restart: unless-stopped
+        env_file: .env # <-- INI YANG PALING KRUSIAL UNTUK DATABASE
+        environment:
+            MYSQL_DATABASE: ${DB_DATABASE}
+            MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+            MYSQL_USER: ${DB_USERNAME}
+            MYSQL_PASSWORD: ${DB_PASSWORD}
         ports:
             - "3307:3306"
-        environment:
-            MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootsecret}
-            MYSQL_DATABASE: ${DB_DATABASE:-topup}
-            MYSQL_USER: ${DB_USERNAME:-user}
-            MYSQL_PASSWORD: ${DB_PASSWORD:-secret}
         volumes:
-            - mysql-data:/var/lib/mysql
+            - web_topup_db_data:/var/lib/mysql
         healthcheck:
             test:
                 [
@@ -74,46 +78,19 @@ services:
                     "ping",
                     "-h",
                     "localhost",
-                    "-u",
-                    "root",
-                    "-p${MYSQL_ROOT_PASSWORD:-rootsecret}",
+                    "-uroot",
+                    "-p${DB_PASSWORD}",
                 ]
-            interval: 10s
+            interval: 5s
             timeout: 5s
             retries: 5
         networks:
-            - topup-net
-
-    # ── Scheduler ──
-    scheduler:
-        build:
-            context: .
-            dockerfile: Dockerfile
-        container_name: topup-scheduler
-        entrypoint: ["entrypoint-worker.sh"]
-        command: >
-            sh -c "
-                while true; do
-                    php artisan schedule:run --no-interaction
-                    sleep 60
-                done
-            "
-        env_file:
-            - .env
-        volumes:
-            - .:/var/www/html
-            - /var/www/html/vendor
-            - /var/www/html/node_modules
-        depends_on:
-            app:
-                condition: service_started
-        networks:
-            - topup-net
-        restart: unless-stopped
-
-volumes:
-    mysql-data:
+            - web_topup_net
 
 networks:
-    topup-net:
+    web_topup_net:
         driver: bridge
+
+volumes:
+    web_topup_db_data:
+        driver: local
