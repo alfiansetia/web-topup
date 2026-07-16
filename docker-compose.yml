@@ -8,11 +8,15 @@ services:
         container_name: web_topup_app
         restart: unless-stopped
         working_dir: /var/www
-        env_file: .env # <-- PAKSA BACA ENV
+        env_file: .env
         volumes:
             - .:/var/www
+            # KUNCI VUE & VENDOR: Mencegah folder lokal yang kosong menimpa hasil build Dockerfile
+            - /var/www/public/build
+            - /var/www/vendor
+        # Perintah disederhanakan karena composer install sudah dilakukan saat build image
         command: >
-            sh -c "composer install --no-dev --optimize-autoloader && php artisan migrate --force && php-fpm"
+            sh -c "git config --global --add safe.directory /var/www && php artisan migrate --force && php-fpm"
         depends_on:
             web-topup-db:
                 condition: service_healthy
@@ -28,9 +32,12 @@ services:
         container_name: web_topup_worker
         restart: unless-stopped
         working_dir: /var/www
-        env_file: .env # <-- PAKSA BACA ENV
+        env_file: .env
         volumes:
             - .:/var/www
+            # KUNCI JUGA DI WORKER: Agar queue bisa membaca aset dan library vendor yang sama
+            - /var/www/public/build
+            - /var/www/vendor
         command: php artisan queue:work --verbose --tries=3 --timeout=90
         depends_on:
             app:
@@ -49,18 +56,21 @@ services:
             - "8999:80"
         volumes:
             - .:/var/www
+            - /var/www/public/build # Nginx juga butuh membaca file statis Vue untuk disajikan ke browser
             - ./nginx.conf:/etc/nginx/conf.d/default.conf
         depends_on:
             - app
         networks:
             - web_topup_net
 
-    # 4. Database MySQL
+    # 4. Database MySQL (Optimasi Khusus Armbian)
     web-topup-db:
         image: mysql:8.0
         container_name: web_topup_db
         restart: unless-stopped
-        env_file: .env # <-- INI YANG PALING KRUSIAL UNTUK DATABASE
+        # OPTIMASI RAM STB: Batasi penggunaan memori InnoDB agar OS Armbian tidak crash/hang
+        command: --innodb_buffer_pool_size=128M --innodb_log_buffer_size=8M --skip-log-bin
+        env_file: .env
         environment:
             MYSQL_DATABASE: ${DB_DATABASE}
             MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
@@ -70,6 +80,7 @@ services:
             - "3307:3306"
         volumes:
             - web_topup_db_data:/var/lib/mysql
+        # OPTIMASI HEALTHCHECK: Diberi kelonggaran start_period karena I/O Armbian (MicroSD/eMMC) lambat
         healthcheck:
             test:
                 [
@@ -81,9 +92,10 @@ services:
                     "-uroot",
                     "-p${DB_PASSWORD}",
                 ]
-            interval: 5s
-            timeout: 5s
-            retries: 5
+            interval: 10s
+            timeout: 10s
+            retries: 10
+            start_period: 60s # Mengabaikan status gagal selama 60 detik pertama saat inisialisasi awal database
         networks:
             - web_topup_net
 
