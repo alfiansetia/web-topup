@@ -1,27 +1,25 @@
 # --- Stage 1: Build Assets & Vendor ---
 FROM php:8.3-fpm AS builder
 
-# Install zip & unzip (dibutuhkan Composer)
 RUN apt-get update && apt-get install -y unzip git zip && apt-get clean && rm -rf /var/lib/apt/lists/*
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
 COPY . .
 
-# 1. Jalankan composer install dulu agar folder /vendor/tightenco/ziggy tercipta
 ENV COMPOSER_ALLOW_SUPERUSER=1
 RUN composer install --no-dev --optimize-autoloader
 
-# 2. Beralih ke Node.js untuk build asset
+# --- Stage 2: Node.js untuk Build Asset ---
 FROM node:22-alpine AS asset-builder
 WORKDIR /app
 
-# Ambil seluruh file dari stage builder (termasuk folder vendor yang baru dibuat)
+# Ambil seluruh file dari stage builder (termasuk folder vendor)
 COPY --from=builder /app /app
 RUN npm ci
 RUN npm run build
 
-# --- Stage 2: Production App (PHP Server) ---
+# --- Stage 3: Production App (PHP Server) ---
 FROM php:8.3-fpm
 
 # Install sistem dependencies untuk production
@@ -53,8 +51,13 @@ RUN docker-php-ext-enable opcache
 
 WORKDIR /var/www/html
 
-# Ambil source code lengkap + vendor + hasil build asset dari stage sebelumnya
-COPY --from=asset-builder /app /var/www/html
+# ==================== PERBAIKAN DI SINI ====================
+# 1. Salin source code awal dan vendor PHP dari stage builder pertama
+COPY --from=builder /app /var/www/html
+
+# 2. TIMPA folder public dengan hasil build asset (Vite) dari stage asset-builder
+COPY --from=asset-builder /app/public /var/www/html/public
+# ===========================================================
 
 # Set permission dasar untuk storage Laravel
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
