@@ -1,49 +1,44 @@
-# === STAGE 1: Install Composer & Node Modules ===
-FROM php:8.3-fpm-alpine AS backend-builder
-RUN apk add --no-cache git unzip zip
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-WORKDIR /app
-COPY . .
-RUN composer install --no-interaction --no-dev --ignore-platform-reqs
+FROM php:8.3-fpm
 
-# === STAGE 2: Build Frontend (Vite) ===
-FROM node:20-alpine AS frontend-builder
-WORKDIR /app
-COPY --from=backend-builder /app /app
-# Ganti npm ci dengan npm install agar lebih toleran jika lockfile absen/berbeda platform
-RUN npm install
-RUN npm run build
-
-# === STAGE 3: Image Final (PHP-FPM) ===
-FROM php:8.3-fpm-alpine
-
-RUN apk add --no-cache \
-    freetype-dev \
-    libjpeg-turbo-dev \
-    libpng-dev \
-    libzip-dev \
-    zip \
-    unzip \
+RUN apt-get update && apt-get install -y \
     git \
-    oniguruma-dev \
-    curl-dev \
-    netcat-openbsd
+    unzip \
+    curl \
+    zip \
+    libzip-dev \
+    libpng-dev \
+    libjpeg62-turbo-dev \
+    libfreetype6-dev \
+    libonig-dev \
+    libxml2-dev \
+    libicu-dev \
+    libpq-dev \
+    default-mysql-client \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install \
+        pdo_mysql \
+        mysqli \
+        zip \
+        intl \
+        gd \
+        bcmath \
+        exif \
+        pcntl
 
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) gd pdo_mysql mbstring zip exif pcntl
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+COPY --from=node:22 /usr/local /usr/local
 
-WORKDIR /var/www
+WORKDIR /var/www/html
+
 COPY . .
 
-COPY --from=backend-builder /app/vendor ./vendor
-COPY --from=frontend-builder /app/public/build ./public/build
+RUN sed -i \
+    -e 's/^;listen = 127.0.0.1:9000/listen = 0.0.0.0:9000/' \
+    /usr/local/etc/php-fpm.d/www.conf
 
-# TAMBAHAN: Daftarkan direktori aman untuk Git agar tidak memicu error dubious ownership
-RUN git config --global --add safe.directory /var/www
+RUN chmod +x docker-entrypoint.sh
 
-RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+ENTRYPOINT ["./docker-entrypoint.sh"]
 
-EXPOSE 9000
 CMD ["php-fpm"]
