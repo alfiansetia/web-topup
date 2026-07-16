@@ -5,7 +5,7 @@ set -e
 echo "⏳ Menunggu MySQL di ${DB_HOST:-mysql}:${DB_PORT:-3306}..."
 max_retries=30
 counter=0
-until php artisan db:monitor > /dev/null 2>&1; do
+until php -r "new PDO('mysql:host=${DB_HOST:-mysql};port=${DB_PORT:-3306};dbname=${DB_DATABASE:-web_topup}', '${DB_USERNAME:-root}', '${DB_PASSWORD:-}');" > /dev/null 2>&1; do
     counter=$((counter + 1))
     if [ "$counter" -ge "$max_retries" ]; then
         echo "❌ MySQL tidak merespon setelah $max_retries percobaan."
