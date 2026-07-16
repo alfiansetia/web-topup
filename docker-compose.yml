@@ -1,66 +1,52 @@
 services:
-    web_topup_db:
-        image: mysql:8.4
-        container_name: web_topup_db
-        restart: unless-stopped
-        environment:
-            MYSQL_DATABASE: ${DB_DATABASE}
-            MYSQL_USER: ${DB_USERNAME}
-            MYSQL_PASSWORD: ${DB_PASSWORD}
-            MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-        ports:
-            - "3307:3306"
-        volumes:
-            - mysql_data:/var/lib/mysql
-        command: >
-            --character-set-server=utf8mb4
-            --collation-server=utf8mb4_unicode_ci
-        healthcheck:
-            test: ["CMD", "mysqladmin", "ping", "-p${MYSQL_ROOT_PASSWORD}"]
-            interval: 5s
-            timeout: 5s
-            retries: 20
-
     web_topup_app:
         build:
             context: .
             dockerfile: Dockerfile
         container_name: web_topup_app
-        restart: unless-stopped
+        restart: always
         env_file:
             - .env
-        depends_on:
-            web_topup_db:
-                condition: service_healthy
         volumes:
-            - ./:/var/www/html
+            - app_code:/var/www/html # Share codebase hasil build ke volume
+            - storage_data:/var/www/html/storage # Persistent storage untuk upload user
+        networks:
+            - shared_network
 
     web_topup_worker:
         build:
             context: .
             dockerfile: Dockerfile
         container_name: web_topup_worker
-        restart: unless-stopped
+        restart: always
         env_file:
             - .env
-        depends_on:
-            web_topup_db:
-                condition: service_healthy
         command: php artisan queue:work --tries=3 --timeout=90
         volumes:
-            - ./:/var/www/html
+            - app_code:/var/www/html # Menggunakan kode yang sama dari volume
+            - storage_data:/var/www/html/storage
+        networks:
+            - shared_network
 
     web_topup_nginx:
         image: nginx:alpine
         container_name: web_topup_nginx
-        restart: unless-stopped
+        restart: always
         depends_on:
             - web_topup_app
         ports:
             - "8999:80"
         volumes:
-            - ./:/var/www/html
-            - ./nginx.conf:/etc/nginx/conf.d/default.conf
+            - app_code:/var/www/html:ro # Nginx membaca asset public secara Read-Only
+            - storage_data:/var/www/html/storage:ro
+            - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+        networks:
+            - shared_network
 
 volumes:
-    mysql_data:
+    storage_data:
+    app_code:
+
+networks:
+    shared_network:
+        external: true # PENTING: Menggunakan shared_network yang dibuat oleh stack MySQL
