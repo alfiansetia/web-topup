@@ -37,8 +37,10 @@ RUN sed -i \
     -e 's/^;listen = 127.0.0.1:9000/listen = 0.0.0.0:9000/' \
     /usr/local/etc/php-fpm.d/www.conf
 
-RUN chmod +x docker-entrypoint.sh
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
-ENTRYPOINT ["./docker-entrypoint.sh"]
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 
 CMD ["php-fpm"]
