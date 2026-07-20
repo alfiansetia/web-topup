@@ -47,7 +47,7 @@ class ProductVariant extends Model
     // Harga efektif (diskon kalau ada)
     public function getEffectivePriceAttribute(): float
     {
-        return $this->discount_price ?? $this->price;
+        return $this->is_discounted ? $this->discount_price : $this->price;
     }
 
     // Apakah sedang diskon?

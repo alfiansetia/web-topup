@@ -945,6 +945,19 @@ class TelegramBotService
             return;
         }
 
+        // Cek apakah ada pesanan pending yang belum diselesaikan
+        $pendingOrder = Order::where('user_id', $user->id)
+            ->where('status', 'pending')
+            ->first();
+
+        if ($pendingOrder) {
+            $this->answerCallbackQuery(
+                $callbackId,
+                '❌ Kamu masih memiliki transaksi pending yang belum dibayar. Silakan selesaikan atau batalkan transaksi sebelum membuat pesanan baru.'
+            );
+            return;
+        }
+
         $product = $variant->product;
         $price = $this->formatRupiah($variant->effective_price);
 
@@ -981,6 +994,19 @@ class TelegramBotService
         $variant = ProductVariant::with('product')->find($variantId);
         if (!$variant || !$variant->is_active || !$variant->product || !$variant->product->is_active) {
             $this->answerCallbackQuery($callbackId, '❌ Produk tidak tersedia.');
+            return;
+        }
+
+        // Cek apakah ada pesanan pending yang belum diselesaikan
+        $pendingOrder = Order::where('user_id', $user->id)
+            ->where('status', 'pending')
+            ->first();
+
+        if ($pendingOrder) {
+            $this->answerCallbackQuery(
+                $callbackId,
+                '❌ Kamu masih memiliki transaksi pending yang belum dibayar. Silakan selesaikan atau batalkan transaksi sebelum membuat pesanan baru.'
+            );
             return;
         }
 

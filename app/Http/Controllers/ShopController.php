@@ -144,6 +144,17 @@ class ShopController extends Controller
 
         $user = Auth::user();
 
+        // Cek apakah ada pesanan pending yang belum diselesaikan
+        $pendingOrder = Order::where('user_id', $user->id)
+            ->where('status', 'pending')
+            ->first();
+
+        if ($pendingOrder) {
+            return back()->withErrors([
+                'checkout' => 'Kamu masih memiliki transaksi pending yang belum dibayar. Silakan selesaikan pembayaran atau hubungi admin sebelum membuat pesanan baru.',
+            ]);
+        }
+
         $customerName = $user->name;
         $customerEmail = $user->email;
         $customerPhone = null;

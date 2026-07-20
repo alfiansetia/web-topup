@@ -103,115 +103,124 @@ const doSearch = () => {
 
         <!-- Table -->
         <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
-            <table class="w-full text-sm">
-                <thead class="bg-gray-50 text-left">
-                    <tr>
-                        <th class="px-5 py-3 text-gray-500 font-medium">
-                            Produk
-                        </th>
-                        <th class="px-5 py-3 text-gray-500 font-medium">
-                            Kategori
-                        </th>
-                        <th class="px-5 py-3 text-gray-500 font-medium">
-                            Varian
-                        </th>
-                        <th class="px-5 py-3 text-gray-500 font-medium">
-                            Status
-                        </th>
-                        <th
-                            class="px-5 py-3 text-gray-500 font-medium text-right"
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 text-left">
+                        <tr>
+                            <th class="px-5 py-3 text-gray-500 font-medium">
+                                Produk
+                            </th>
+                            <th class="px-5 py-3 text-gray-500 font-medium">
+                                Kategori
+                            </th>
+                            <th class="px-5 py-3 text-gray-500 font-medium">
+                                Varian
+                            </th>
+                            <th class="px-5 py-3 text-gray-500 font-medium">
+                                Status
+                            </th>
+                            <th
+                                class="px-5 py-3 text-gray-500 font-medium text-right"
+                            >
+                                Aksi
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y">
+                        <tr
+                            v-for="product in products.data"
+                            :key="product.id"
+                            class="hover:bg-gray-50"
                         >
-                            Aksi
-                        </th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y">
-                    <tr
-                        v-for="product in products.data"
-                        :key="product.id"
-                        class="hover:bg-gray-50"
-                    >
-                        <td class="px-5 py-3">
-                            <div class="flex items-center gap-3">
-                                <img
-                                    :src="product.image_url"
-                                    :alt="product.name"
-                                    class="w-10 h-10 object-cover rounded-lg ring-1 ring-gray-200"
-                                />
-                                <div>
-                                    <div class="font-medium">
-                                        {{ product.name }}
-                                    </div>
-                                    <div
-                                        class="text-xs text-gray-400 font-mono"
-                                    >
-                                        {{ product.slug }}
+                            <td class="px-5 py-3">
+                                <div class="flex items-center gap-3">
+                                    <img
+                                        :src="product.image_url"
+                                        :alt="product.name"
+                                        class="w-10 h-10 object-cover rounded-lg ring-1 ring-gray-200"
+                                    />
+                                    <div>
+                                        <div class="font-medium">
+                                            {{ product.name }}
+                                        </div>
+                                        <div
+                                            class="text-xs text-gray-400 font-mono"
+                                        >
+                                            {{ product.slug }}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </td>
-                        <td class="px-5 py-3">
-                            <span
-                                class="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs"
-                            >
-                                {{ product.category?.name }}
-                            </span>
-                        </td>
-                        <td class="px-5 py-3">
-                            {{ product.variants_count }} varian
-                        </td>
-                        <td class="px-5 py-3">
-                            <span
-                                :class="
-                                    product.is_active
-                                        ? 'bg-green-100 text-green-700'
-                                        : 'bg-red-100 text-red-700'
-                                "
-                                class="px-2 py-1 rounded-full text-xs font-medium"
-                            >
-                                {{ product.is_active ? "Aktif" : "Nonaktif" }}
-                            </span>
-                        </td>
-                        <td class="px-5 py-3 text-right">
-                            <div class="flex items-center justify-end gap-1">
-                                <Link
-                                    :href="
-                                        route(
-                                            'admin.variants.index',
-                                            product.id,
-                                        )
+                            </td>
+                            <td class="px-5 py-3">
+                                <span
+                                    class="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs"
+                                >
+                                    {{ product.category?.name }}
+                                </span>
+                            </td>
+                            <td class="px-5 py-3">
+                                {{ product.variants_count }} varian
+                            </td>
+                            <td class="px-5 py-3">
+                                <span
+                                    :class="
+                                        product.is_active
+                                            ? 'bg-green-100 text-green-700'
+                                            : 'bg-red-100 text-red-700'
                                     "
-                                    class="inline-flex items-center gap-1 text-green-600 hover:text-green-800 hover:bg-green-50 px-2 py-1 rounded text-xs font-medium transition-colors"
+                                    class="px-2 py-1 rounded-full text-xs font-medium"
                                 >
-                                    <CogIcon class="w-3.5 h-3.5" /> Varian
-                                </Link>
-                                <Link
-                                    :href="
-                                        route('admin.products.edit', product.id)
-                                    "
-                                    class="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 px-2 py-1 rounded text-xs font-medium transition-colors"
+                                    {{
+                                        product.is_active ? "Aktif" : "Nonaktif"
+                                    }}
+                                </span>
+                            </td>
+                            <td class="px-5 py-3 text-right">
+                                <div
+                                    class="flex items-center justify-end gap-1"
                                 >
-                                    <PencilIcon class="w-3.5 h-3.5" /> Edit
-                                </Link>
-                                <button
-                                    @click="deleteProduct(product)"
-                                    class="inline-flex items-center gap-1 text-red-600 hover:text-red-800 hover:bg-red-50 px-2 py-1 rounded text-xs font-medium transition-colors"
-                                >
-                                    <TrashIcon class="w-3.5 h-3.5" /> Hapus
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr v-if="!products.data?.length">
-                        <td
-                            colspan="5"
-                            class="px-5 py-8 text-center text-gray-400"
-                        >
-                            Belum ada produk
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+                                    <Link
+                                        :href="
+                                            route(
+                                                'admin.variants.index',
+                                                product.id,
+                                            )
+                                        "
+                                        class="inline-flex items-center gap-1 text-green-600 hover:text-green-800 hover:bg-green-50 px-2 py-1 rounded text-xs font-medium transition-colors"
+                                    >
+                                        <CogIcon class="w-3.5 h-3.5" /> Varian
+                                    </Link>
+                                    <Link
+                                        :href="
+                                            route(
+                                                'admin.products.edit',
+                                                product.id,
+                                            )
+                                        "
+                                        class="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 px-2 py-1 rounded text-xs font-medium transition-colors"
+                                    >
+                                        <PencilIcon class="w-3.5 h-3.5" /> Edit
+                                    </Link>
+                                    <button
+                                        @click="deleteProduct(product)"
+                                        class="inline-flex items-center gap-1 text-red-600 hover:text-red-800 hover:bg-red-50 px-2 py-1 rounded text-xs font-medium transition-colors"
+                                    >
+                                        <TrashIcon class="w-3.5 h-3.5" /> Hapus
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr v-if="!products.data?.length">
+                            <td
+                                colspan="5"
+                                class="px-5 py-8 text-center text-gray-400"
+                            >
+                                Belum ada produk
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <Pagination :links="products.links" />

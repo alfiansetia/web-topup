@@ -82,98 +82,109 @@ const doSearch = () => {
 
         <!-- Table -->
         <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
-            <table class="w-full text-sm">
-                <thead class="bg-gray-50 text-left">
-                    <tr>
-                        <th class="px-5 py-3 text-gray-500 font-medium">
-                            Nama
-                        </th>
-                        <th class="px-5 py-3 text-gray-500 font-medium">
-                            Slug
-                        </th>
-                        <th class="px-5 py-3 text-gray-500 font-medium">
-                            Gambar
-                        </th>
-                        <th class="px-5 py-3 text-gray-500 font-medium">
-                            Produk
-                        </th>
-                        <th class="px-5 py-3 text-gray-500 font-medium">
-                            Status
-                        </th>
-                        <th class="px-5 py-3 text-gray-500 font-medium">
-                            Urutan
-                        </th>
-                        <th
-                            class="px-5 py-3 text-gray-500 font-medium text-right"
-                        >
-                            Aksi
-                        </th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y">
-                    <tr
-                        v-for="cat in categories.data"
-                        :key="cat.id"
-                        class="hover:bg-gray-50"
-                    >
-                        <td class="px-5 py-3 font-medium">{{ cat.name }}</td>
-                        <td class="px-5 py-3 text-gray-500 font-mono text-xs">
-                            {{ cat.slug }}
-                        </td>
-                        <td class="px-5 py-3">
-                            <img
-                                :src="cat.image_url"
-                                :alt="cat.name"
-                                class="w-10 h-10 object-cover rounded-lg ring-1 ring-gray-200"
-                            />
-                        </td>
-                        <td class="px-5 py-3">
-                            {{ cat.products_count }} produk
-                        </td>
-                        <td class="px-5 py-3">
-                            <span
-                                :class="
-                                    cat.is_active
-                                        ? 'bg-green-100 text-green-700'
-                                        : 'bg-red-100 text-red-700'
-                                "
-                                class="px-2 py-1 rounded-full text-xs font-medium"
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 text-left">
+                        <tr>
+                            <th class="px-5 py-3 text-gray-500 font-medium">
+                                Nama
+                            </th>
+                            <th class="px-5 py-3 text-gray-500 font-medium">
+                                Slug
+                            </th>
+                            <th class="px-5 py-3 text-gray-500 font-medium">
+                                Gambar
+                            </th>
+                            <th class="px-5 py-3 text-gray-500 font-medium">
+                                Produk
+                            </th>
+                            <th class="px-5 py-3 text-gray-500 font-medium">
+                                Status
+                            </th>
+                            <th class="px-5 py-3 text-gray-500 font-medium">
+                                Urutan
+                            </th>
+                            <th
+                                class="px-5 py-3 text-gray-500 font-medium text-right"
                             >
-                                {{ cat.is_active ? "Aktif" : "Nonaktif" }}
-                            </span>
-                        </td>
-                        <td class="px-5 py-3 text-gray-500">
-                            {{ cat.sort_order }}
-                        </td>
-                        <td class="px-5 py-3 text-right">
-                            <div class="flex items-center justify-end gap-1">
-                                <Link
-                                    :href="
-                                        route('admin.categories.edit', cat.id)
-                                    "
-                                    class="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 px-2 py-1 rounded text-xs font-medium transition-colors"
-                                >
-                                    <PencilIcon class="w-3.5 h-3.5" /> Edit
-                                </Link>
-                                <button
-                                    @click="deleteCategory(cat)"
-                                    class="inline-flex items-center gap-1 text-red-600 hover:text-red-800 hover:bg-red-50 px-2 py-1 rounded text-xs font-medium transition-colors"
-                                >
-                                    <TrashIcon class="w-3.5 h-3.5" /> Hapus
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr v-if="!categories.data?.length">
-                        <td
-                            colspan="7"
-                            class="px-5 py-8 text-center text-gray-400"
+                                Aksi
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y">
+                        <tr
+                            v-for="cat in categories.data"
+                            :key="cat.id"
+                            class="hover:bg-gray-50"
                         >
-                            Belum ada kategori
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+                            <td class="px-5 py-3 font-medium">
+                                {{ cat.name }}
+                            </td>
+                            <td
+                                class="px-5 py-3 text-gray-500 font-mono text-xs"
+                            >
+                                {{ cat.slug }}
+                            </td>
+                            <td class="px-5 py-3">
+                                <img
+                                    :src="cat.image_url"
+                                    :alt="cat.name"
+                                    class="w-10 h-10 object-cover rounded-lg ring-1 ring-gray-200"
+                                />
+                            </td>
+                            <td class="px-5 py-3">
+                                {{ cat.products_count }} produk
+                            </td>
+                            <td class="px-5 py-3">
+                                <span
+                                    :class="
+                                        cat.is_active
+                                            ? 'bg-green-100 text-green-700'
+                                            : 'bg-red-100 text-red-700'
+                                    "
+                                    class="px-2 py-1 rounded-full text-xs font-medium"
+                                >
+                                    {{ cat.is_active ? "Aktif" : "Nonaktif" }}
+                                </span>
+                            </td>
+                            <td class="px-5 py-3 text-gray-500">
+                                {{ cat.sort_order }}
+                            </td>
+                            <td class="px-5 py-3 text-right">
+                                <div
+                                    class="flex items-center justify-end gap-1"
+                                >
+                                    <Link
+                                        :href="
+                                            route(
+                                                'admin.categories.edit',
+                                                cat.id,
+                                            )
+                                        "
+                                        class="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 px-2 py-1 rounded text-xs font-medium transition-colors"
+                                    >
+                                        <PencilIcon class="w-3.5 h-3.5" /> Edit
+                                    </Link>
+                                    <button
+                                        @click="deleteCategory(cat)"
+                                        class="inline-flex items-center gap-1 text-red-600 hover:text-red-800 hover:bg-red-50 px-2 py-1 rounded text-xs font-medium transition-colors"
+                                    >
+                                        <TrashIcon class="w-3.5 h-3.5" /> Hapus
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr v-if="!categories.data?.length">
+                            <td
+                                colspan="7"
+                                class="px-5 py-8 text-center text-gray-400"
+                            >
+                                Belum ada kategori
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <Pagination :links="categories.links" />
